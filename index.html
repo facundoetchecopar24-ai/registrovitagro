@@ -8,178 +8,552 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=Syne:wght@700;800&display=swap');
+
+/* ─────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────── */
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --gj:#4A7C59;--gj-dark:#2B6B4E;--gj-light:#EAF3ED;
-  --ft:#8DB87A;--ft-light:#F0F7ED;--jb:#1e5c3a;
-  --ink:#1A2E22;--ink2:#3D5A47;--ink3:#6B8F78;
-  --border:#D4E6DA;--border2:#E8F2EB;
-  --bg:#F4F9F5;--card:#FFFFFF;
-  --red:#C0392B;--red-bg:#FDECEA;
-  --orange:#D35400;--orange-bg:#FEF0E7;
-  --blue:#1A5276;--blue-bg:#EAF2FA;
-  --purple:#6C3483;--purple-bg:#F5EEF8;
-  --shadow:0 1px 3px rgba(42,107,78,.10),0 1px 2px rgba(42,107,78,.06);
-  --shadow-md:0 4px 16px rgba(42,107,78,.13);
-  --radius:8px;--radius-lg:12px;
+  /* Brand greens */
+  --g0:#0d2419;   /* deepest */
+  --g1:#152d20;
+  --g2:#1a3d2b;
+  --g3:#245c3a;   /* topbar base */
+  --g4:#2e7048;
+  --g5:#3d8a58;
+  --g6:#52a46e;
+  --g7:#7ec299;
+  --g8:#b2ddc4;
+  --g9:#d9f0e4;
+  --g10:#edf7f2;  /* lightest tint */
+
+  /* Sidebar gradient anchors */
+  --sb-top:var(--g2);
+  --sb-bot:#2a6642;
+
+  /* Content area */
+  --bg:#f3f8f5;
+  --card:#ffffff;
+  --border:#ddeee5;
+  --border2:#edf7f2;
+
+  /* Text */
+  --ink:#0f1f16;
+  --ink2:#1e3a28;
+  --ink3:#52746a;
+  --ink4:#96b5a8;
+
+  /* Accent semantic */
+  --red:#b83030;   --red-bg:#fff0f0;   --red-mid:#f8c8c8;
+  --orange:#c25a14;--orange-bg:#fff4ec;
+  --blue:#1a4878;  --blue-bg:#edf2fb;
+  --purple:#5a2b8a;--purple-bg:#f3eefa;
+
+  /* Shadows */
+  --sh1:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 16px rgba(0,0,0,.08),0 1px 4px rgba(0,0,0,.04);
+  --sh3:0 8px 32px rgba(0,0,0,.12),0 2px 8px rgba(0,0,0,.06);
+
+  /* Geometry */
+  --r:8px;--rl:12px;--rxl:16px;
+  --ease:cubic-bezier(.4,0,.2,1);
 }
-body{font-family:system-ui,-apple-system,sans-serif;font-size:13px;background:var(--bg);color:var(--ink);line-height:1.5;min-height:100vh}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  font-size:13px;background:var(--bg);color:var(--ink);
+  line-height:1.55;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;
+}
 
-.topbar{background:linear-gradient(135deg,var(--jb) 0%,var(--gj-dark) 60%,#3a7a52 100%);color:#fff;height:56px;display:flex;align-items:center;padding:0 20px;gap:12px;box-shadow:0 2px 12px rgba(0,0,0,.22);position:sticky;top:0;z-index:50}
-.topbar-logo{height:40px;width:40px;object-fit:contain;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
-.topbar-divider{width:1px;height:28px;background:rgba(255,255,255,.25);margin:0 4px}
-.topbar-title{font-size:15px;font-weight:700;letter-spacing:.5px;color:#fff}
-.topbar-sub{font-size:10px;color:rgba(255,255,255,.65);letter-spacing:.3px}
-.topbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.topbar-pill{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:#fff;letter-spacing:.3px}
+/* ─────────────────────────────────────────
+   TOPBAR  — full-width brand bar
+───────────────────────────────────────── */
+.topbar{
+  background:var(--g2);
+  height:64px;
+  display:flex;align-items:center;
+  padding:0 24px;gap:16px;
+  position:sticky;top:0;z-index:60;
+  /* bottom edge: hard stop so sidebar gradient starts seamlessly */
+  box-shadow:0 1px 0 rgba(255,255,255,.06),0 4px 24px rgba(0,0,0,.3);
+  flex-shrink:0;
+}
 
-.layout{display:flex;min-height:calc(100vh - 56px)}
-.nav{width:215px;background:#fff;border-right:1px solid var(--border);padding:14px 10px;display:flex;flex-direction:column;gap:2px;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto}
-.nav-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--ink3);padding:10px 8px 4px;margin-top:4px}
-.nav-section:first-child{padding-top:2px;margin-top:0}
-.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--radius);cursor:pointer;color:var(--ink2);font-weight:500;font-size:13px;transition:all .15s;border:none;background:none;width:100%;text-align:left}
-.nav-item:hover{background:var(--gj-light);color:var(--gj)}
-.nav-item.active{background:var(--gj-light);color:var(--gj-dark);font-weight:700}
-.nav-item svg{flex-shrink:0;opacity:.65}
-.nav-item.active svg{opacity:1}
-.nav-divider{height:1px;background:var(--border2);margin:6px 0}
-.nav-badge{margin-left:auto;background:var(--gj);color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700}
+/* logo mark */
+.topbar-logo{
+  height:40px;width:40px;object-fit:contain;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.35));
+  flex-shrink:0;
+}
 
-.main{flex:1;padding:24px;overflow-y:auto}
+/* brand wordmark — Syne for impact */
+.topbar-brand{display:flex;flex-direction:column;justify-content:center}
+.topbar-title{
+  font-family:'Syne',sans-serif;
+  font-size:20px;font-weight:800;
+  color:#fff;
+  letter-spacing:.5px;line-height:1;
+  text-shadow:0 1px 4px rgba(0,0,0,.25);
+}
+.topbar-sub{
+  font-size:10px;font-weight:500;
+  color:rgba(255,255,255,.5);
+  letter-spacing:.8px;text-transform:uppercase;
+  margin-top:3px;
+}
+
+/* divider */
+.topbar-divider{
+  width:1px;height:32px;
+  background:linear-gradient(180deg,transparent,rgba(255,255,255,.2),transparent);
+  margin:0 4px;
+}
+
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.topbar-pill{
+  background:rgba(255,255,255,.10);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:20px;padding:4px 12px;
+  font-size:11px;font-weight:600;
+  color:rgba(255,255,255,.85);letter-spacing:.3px;
+}
+#topPeriodo{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.25);color:#fff}
+
+/* ─────────────────────────────────────────
+   LAYOUT SHELL
+───────────────────────────────────────── */
+.layout{
+  display:flex;
+  flex:1;
+  min-height:0;
+}
+
+/* ─────────────────────────────────────────
+   SIDEBAR — gradient from g2 (topbar) to g6
+───────────────────────────────────────── */
+.nav{
+  width:240px;flex-shrink:0;
+  background:linear-gradient(180deg,
+    var(--g2) 0%,
+    #234f36 18%,
+    #29633f 40%,
+    #2e7048 65%,
+    #357a52 85%,
+    var(--g6) 100%
+  );
+  padding:20px 12px 24px;
+  display:flex;flex-direction:column;gap:1px;
+  position:sticky;top:64px;
+  height:calc(100vh - 64px);
+  overflow-y:auto;
+  /* seamless join with topbar */
+  border-right:none;
+  box-shadow:inset -1px 0 0 rgba(255,255,255,.04),
+             4px 0 20px rgba(0,0,0,.15);
+}
+
+/* custom scrollbar in dark sidebar */
+.nav::-webkit-scrollbar{width:4px}
+.nav::-webkit-scrollbar-track{background:transparent}
+.nav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:4px}
+
+.nav-section{
+  font-size:9px;font-weight:700;text-transform:uppercase;
+  letter-spacing:1.2px;color:rgba(255,255,255,.35);
+  padding:14px 10px 5px;margin-top:4px;
+}
+.nav-section:first-child{margin-top:0;padding-top:0}
+
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:var(--r);
+  cursor:pointer;color:rgba(255,255,255,.65);
+  font-weight:500;font-size:13px;
+  transition:all .18s var(--ease);
+  border:none;background:none;width:100%;text-align:left;
+  position:relative;
+}
+.nav-item:hover{
+  background:rgba(255,255,255,.10);
+  color:#fff;
+}
+.nav-item.active{
+  background:rgba(255,255,255,.16);
+  color:#fff;font-weight:600;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
+}
+/* active left accent bar */
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:6px;bottom:6px;
+  width:3px;background:#fff;border-radius:0 3px 3px 0;
+  opacity:.9;
+}
+.nav-item svg{flex-shrink:0;opacity:.6;transition:opacity .15s}
+.nav-item.active svg,.nav-item:hover svg{opacity:1}
+
+.nav-divider{
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.12),transparent);
+  margin:8px 0;
+}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+
+/* ─────────────────────────────────────────
+   MAIN CONTENT
+───────────────────────────────────────── */
+.main{flex:1;padding:28px 32px;overflow-y:auto;max-width:1440px}
 .panel{display:none}.panel.active{display:block}
-.page-header{margin-bottom:22px}
-.page-title{font-size:19px;font-weight:700;color:var(--ink);letter-spacing:-.3px}
-.page-sub{color:var(--ink3);font-size:13px;margin-top:3px}
 
-.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow);margin-bottom:16px;overflow:hidden}
-.card-header{padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;background:#fafcfb}
-.card-title{font-size:13px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:8px}
-.card-title svg{color:var(--gj);flex-shrink:0}
-.card-body{padding:18px}
+/* Page header */
+.page-header{margin-bottom:26px}
+.page-title{
+  font-family:'Syne',sans-serif;
+  font-size:22px;font-weight:800;color:var(--ink);
+  letter-spacing:-.3px;line-height:1.2;
+}
+.page-sub{color:var(--ink3);font-size:13px;margin-top:5px;line-height:1.55}
 
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+/* ─────────────────────────────────────────
+   CARDS
+───────────────────────────────────────── */
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--rl);
+  box-shadow:var(--sh1);
+  margin-bottom:16px;overflow:hidden;
+  transition:box-shadow .2s var(--ease);
+}
+.card-header{
+  padding:14px 20px;
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(180deg,#fbfefb 0%,#f6faf6 100%);
+}
+.card-title{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px}
+.card-title svg{color:var(--g4)}
+.card-body{padding:20px}
+
+/* ─────────────────────────────────────────
+   METRICS  — the star of the show
+───────────────────────────────────────── */
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.metric{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--rl);
+  padding:20px 22px 18px;
+  box-shadow:var(--sh1);
+  position:relative;overflow:hidden;
+  transition:box-shadow .2s var(--ease),transform .2s var(--ease);
+}
+.metric:hover{box-shadow:var(--sh2);transform:translateY(-2px)}
+/* accent top stripe with gradient */
+.metric::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--g4),var(--g7));
+}
+/* subtle bg pattern */
+.metric::after{
+  content:'';position:absolute;bottom:-20px;right:-20px;
+  width:80px;height:80px;border-radius:50%;
+  background:radial-gradient(circle,rgba(82,164,110,.08) 0%,transparent 70%);
+  pointer-events:none;
+}
+.metric-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--ink3)}
+.metric-value{
+  font-family:'Syne',sans-serif;
+  font-size:30px;font-weight:800;color:var(--ink);
+  margin-top:8px;letter-spacing:-.5px;line-height:1;
+}
+.metric-sub{font-size:11px;color:var(--g6);margin-top:6px;font-weight:500}
+
+/* ─────────────────────────────────────────
+   FORMS
+───────────────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 .form-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:14px}
-.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group{display:flex;flex-direction:column;gap:5px}
 .form-group.full{grid-column:1/-1}
-.form-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3)}
-.form-input{border:1.5px solid var(--border);border-radius:6px;padding:8px 10px;font-size:13px;background:#fff;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;width:100%;font-family:inherit}
-.form-input:focus{border-color:var(--gj);box-shadow:0 0 0 3px rgba(74,124,89,.12)}
+.form-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3)}
+.form-input{
+  border:1.5px solid var(--border);border-radius:var(--r);
+  padding:8px 11px;font-size:13px;background:var(--card);
+  color:var(--ink);outline:none;width:100%;font-family:inherit;
+  transition:border-color .15s var(--ease),box-shadow .15s var(--ease);
+}
+.form-input:hover:not(:focus){border-color:var(--g8)}
+.form-input:focus{border-color:var(--g4);box-shadow:0 0 0 3px rgba(61,138,88,.12)}
 select.form-input{cursor:pointer}
-textarea.form-input{resize:vertical;font-family:monospace;font-size:11px;min-height:110px;line-height:1.6}
-.form-hint{font-size:11px;color:var(--ink3)}
+textarea.form-input{resize:vertical;font-family:monospace;font-size:11.5px;min-height:100px;line-height:1.65}
+.form-hint{font-size:11px;color:var(--ink4);line-height:1.4}
 
-.btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--ink2);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;line-height:1;font-family:inherit}
-.btn:hover{background:var(--bg);border-color:var(--gj);color:var(--gj)}
-.btn-primary{background:var(--gj);color:#fff;border-color:var(--gj);box-shadow:0 1px 4px rgba(74,124,89,.3)}
-.btn-primary:hover{background:var(--jb);border-color:var(--jb);color:#fff}
-.btn-outline{border-color:var(--gj);color:var(--gj);background:#fff}
-.btn-outline:hover{background:var(--gj-light)}
-.btn-danger{background:var(--red-bg);color:var(--red);border-color:#f5c6c2}
-.btn-danger:hover{background:#fbd7d4;color:var(--red)}
+/* ─────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:8px 16px;border-radius:var(--r);
+  border:1.5px solid var(--border);
+  background:var(--card);color:var(--ink2);
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s var(--ease);white-space:nowrap;
+  line-height:1;font-family:inherit;
+}
+.btn:hover{background:var(--g10);border-color:var(--g8);color:var(--g2)}
+.btn-primary{
+  background:linear-gradient(135deg,var(--g4) 0%,var(--g3) 100%);
+  color:#fff;border-color:var(--g4);
+  box-shadow:0 1px 3px rgba(0,0,0,.12),0 1px 2px rgba(45,112,72,.2);
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,var(--g3) 0%,var(--g2) 100%);
+  border-color:var(--g3);color:#fff;
+  box-shadow:0 4px 12px rgba(45,112,72,.3);
+  transform:translateY(-1px);
+}
+.btn-outline{border-color:var(--g5);color:var(--g4)}
+.btn-outline:hover{background:var(--g10);border-color:var(--g4);color:var(--g2)}
+.btn-danger{background:var(--red-bg);color:var(--red);border-color:var(--red-mid)}
+.btn-danger:hover{background:var(--red-mid)}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-xs{padding:3px 8px;font-size:11px}
 .btn-row{display:flex;gap:8px;flex-wrap:wrap}
 
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
-.badge-planta{background:var(--gj-light);color:var(--jb)}
+/* ─────────────────────────────────────────
+   BADGES
+───────────────────────────────────────── */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.2px}
+.badge-planta{background:var(--g10);color:var(--g2)}
 .badge-comercial{background:var(--blue-bg);color:var(--blue)}
 .badge-sin{background:var(--border2);color:var(--ink3)}
-.badge-manana{background:#E8F5E9;color:#2E7D32}
-.badge-tarde{background:#FFF3E0;color:#E65100}
+.badge-manana{background:#e5f3e8;color:#1e5c28}
+.badge-tarde{background:#fef0e0;color:#9a4010}
 .badge-noche{background:var(--purple-bg);color:var(--purple)}
 .badge-diurno{background:var(--border2);color:var(--ink2)}
 .badge-doble{background:var(--red-bg);color:var(--red)}
-.badge-sabado{background:#FFF3E0;color:#BF360C}
-.badge-normal{background:var(--border2);color:var(--ink3)}
-.badge-ok{background:#E8F5E9;color:#2E7D32}
+.badge-sabado{background:#fffaeb;color:#8a6200}
+.badge-normal{background:var(--border2);color:var(--ink4)}
+.badge-ok{background:#e5f3e8;color:#1e5c28}
 .badge-excede{background:var(--orange-bg);color:var(--orange)}
 .badge-sinregreso{background:var(--red-bg);color:var(--red)}
 
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
-.metric{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow);border-top:3px solid var(--gj)}
-.metric-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--ink3)}
-.metric-value{font-size:26px;font-weight:800;color:var(--ink);margin-top:6px;letter-spacing:-.5px;line-height:1}
-.metric-sub{font-size:11px;color:var(--ft);margin-top:4px;font-weight:500}
+/* ─────────────────────────────────────────
+   TABS
+───────────────────────────────────────── */
+.tabs{display:flex;gap:2px;background:var(--border2);border-radius:var(--r);padding:3px;margin-bottom:18px;width:fit-content}
+.tab-btn{padding:7px 18px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink3);transition:all .15s;border:none;background:none;white-space:nowrap;font-family:inherit}
+.tab-btn.active{background:var(--card);color:var(--g2);box-shadow:var(--sh1)}
 
-.tabs{display:flex;gap:2px;background:var(--border2);border-radius:8px;padding:3px;margin-bottom:16px;width:fit-content}
-.tab-btn{padding:7px 16px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;color:var(--ink3);transition:all .15s;border:none;background:none;white-space:nowrap;font-family:inherit}
-.tab-btn.active{background:#fff;color:var(--jb);box-shadow:var(--shadow)}
-
-.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius-lg);background:#fff;box-shadow:var(--shadow)}
+/* ─────────────────────────────────────────
+   TABLE
+───────────────────────────────────────── */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:var(--sh1)}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:#F2F8F4;padding:9px 12px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);white-space:nowrap}
-td{padding:8px 12px;border-bottom:1px solid var(--border2);vertical-align:middle;white-space:nowrap;color:var(--ink2)}
+th{background:linear-gradient(180deg,#f6faf6 0%,#f0f7f1 100%);padding:10px 12px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink3);border-bottom:1.5px solid var(--border);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--border2);vertical-align:middle;white-space:nowrap;color:var(--ink2)}
 tr:last-child td{border-bottom:none}
-tr.data-row:hover td{background:#F7FDF9;cursor:pointer}
-.expand-row td{background:#F5FBF7;padding:0}
-.expand-inner{padding:14px 16px}
+tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
+.expand-row td{background:#f2f9f5;padding:0}
+.expand-inner{padding:16px}
 .sub-table{width:100%;font-size:11px;border-collapse:collapse}
-.sub-table th{background:#E8F5EC;padding:6px 10px;font-size:10px;font-weight:700;color:var(--ink3);border-bottom:1px solid var(--border)}
+.sub-table th{background:#e8f3ec;padding:6px 10px;font-size:10px;font-weight:700;color:var(--ink3);border-bottom:1px solid var(--border)}
 .sub-table td{padding:6px 10px;border-bottom:1px solid var(--border2);color:var(--ink2)}
 .sub-table tr:last-child td{border-bottom:none}
-.total-row td{font-weight:700;background:#EBF5EE;border-top:2px solid var(--border)}
+.total-row td{font-weight:700;background:linear-gradient(180deg,#eaf4ee 0%,#e2f0e8 100%);border-top:2px solid var(--g8)}
 
-.avatar{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;letter-spacing:-.5px}
-.av-0{background:#C8E6C9;color:#1B5E20}.av-1{background:#BBDEFB;color:#0D47A1}
-.av-2{background:#E1BEE7;color:#4A148C}.av-3{background:#FFE0B2;color:#BF360C}
-.av-4{background:#FCE4EC;color:#880E4F}.av-5{background:#E8EAF6;color:#1A237E}
-.av-6{background:#F0F4C3;color:#827717}.av-7{background:#B2EBF2;color:#006064}
+/* ─────────────────────────────────────────
+   AVATARS
+───────────────────────────────────────── */
+.avatar{width:30px;height:30px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.av-0{background:#c8e6c9;color:#1b5e20}.av-1{background:#bbdefb;color:#0d47a1}
+.av-2{background:#e1bee7;color:#4a148c}.av-3{background:#ffe0b2;color:#bf360c}
+.av-4{background:#fce4ec;color:#880e4f}.av-5{background:#e8eaf6;color:#1a237e}
+.av-6{background:#f0f4c3;color:#827717}.av-7{background:#b2ebf2;color:#006064}
 .av-x{background:var(--border2);color:var(--ink3)}
 .name-cell{display:flex;align-items:center;gap:9px}
 
+/* ─────────────────────────────────────────
+   HS CHIPS
+───────────────────────────────────────── */
 .hs-chip{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;margin:1px}
-.hc-n{background:#E8F5E9;color:#2E7D32}.hc-nc{background:#1A2E22;color:#fff}
-.hc-e{background:var(--purple-bg);color:var(--purple)}.hc-s{background:#FFF3E0;color:#E65100}
-.hc-d{background:var(--red-bg);color:var(--red)}.hc-f{background:#FCE4EC;color:#880E4F}
+.hc-n{background:#e5f3e8;color:#1e5c28}.hc-nc{background:var(--ink);color:#fff}
+.hc-e{background:var(--purple-bg);color:var(--purple)}.hc-s{background:#fef0e0;color:#9a4010}
+.hc-d{background:var(--red-bg);color:var(--red)}.hc-f{background:#fce4ec;color:#880e4f}
 
-.upload-area{border:2px dashed var(--border);border-radius:var(--radius-lg);padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:#fff;position:relative}
-.upload-area:hover,.upload-area.dragover{border-color:var(--gj);background:var(--gj-light)}
-.upload-icon{width:52px;height:52px;border-radius:14px;background:var(--gj-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;border:1px solid var(--border)}
-.upload-title{font-size:14px;font-weight:700;color:var(--ink)}
-.upload-sub{font-size:12px;color:var(--ink3);margin-top:5px}
+/* ─────────────────────────────────────────
+   UPLOAD
+───────────────────────────────────────── */
+.upload-area{border:2px dashed var(--border);border-radius:var(--rl);padding:44px 24px;text-align:center;cursor:pointer;transition:all .2s var(--ease);background:var(--card)}
+.upload-area:hover,.upload-area.dragover{border-color:var(--g5);background:var(--g10)}
+.upload-icon{width:56px;height:56px;border-radius:16px;background:var(--g10);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1.5px solid var(--g9)}
+.upload-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--ink);letter-spacing:-.1px}
+.upload-sub{font-size:12px;color:var(--ink3);margin-top:6px}
 #fileInput{display:none}
 
-.date-range-bar{display:flex;align-items:center;gap:10px;background:var(--gj-light);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;margin-bottom:16px;flex-wrap:wrap}
-.date-range-bar label{font-size:11px;font-weight:700;color:var(--jb);text-transform:uppercase;letter-spacing:.4px}
-.dpick{display:inline-flex;align-items:center;gap:3px;border:1.5px solid var(--border);border-radius:6px;padding:5px 9px;background:#fff;font-size:13px;color:var(--ink);transition:border-color .15s}
-.dpick:focus-within{border-color:var(--gj);box-shadow:0 0 0 3px rgba(74,124,89,.1)}
+/* ─────────────────────────────────────────
+   DATE PICKER
+───────────────────────────────────────── */
+.date-range-bar{display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,var(--g10) 0%,#f8fcf9 100%);border:1.5px solid var(--g9);border-radius:var(--r);padding:14px 18px;margin-bottom:16px;flex-wrap:wrap}
+.date-range-bar label{font-size:10px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.7px}
+.dpick{display:inline-flex;align-items:center;gap:3px;border:1.5px solid var(--border);border-radius:var(--r);padding:6px 10px;background:var(--card);font-size:13px;color:var(--ink);transition:all .15s;box-shadow:var(--sh1)}
+.dpick:focus-within{border-color:var(--g4);box-shadow:0 0 0 3px rgba(61,138,88,.10)}
 .dpick select{border:none;outline:none;background:transparent;font-size:13px;color:var(--ink);padding:0;cursor:pointer;font-family:inherit;-webkit-appearance:none;-moz-appearance:none;appearance:none;text-align:center}
-.dpick-sep{color:var(--ink3);font-weight:700;font-size:13px;user-select:none}
-.range-sep{color:var(--ink3);font-size:12px;font-weight:600}
-.range-info{margin-left:auto;font-size:11px;color:var(--ink3);font-weight:500}
+.dpick-sep{color:var(--ink4);font-weight:700;font-size:12px;user-select:none}
+.range-sep{color:var(--ink4);font-size:13px}
+.range-info{font-size:11px;color:var(--ink3);font-weight:600;margin-left:auto}
 
-.filters-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.filter-label{font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+/* ─────────────────────────────────────────
+   FILTERS BAR
+───────────────────────────────────────── */
+.filters-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.filter-label{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap}
 
-.alert{padding:11px 14px;border-radius:var(--radius);font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;font-weight:500}
-.alert-warn{background:var(--orange-bg);color:var(--orange);border:1px solid #f5cba7}
-.alert-info{background:var(--blue-bg);color:var(--blue);border:1px solid #aed6f1}
-.alert-success{background:#E8F5E9;color:#1B5E20;border:1px solid #A5D6A7}
+/* ─────────────────────────────────────────
+   ALERTS
+───────────────────────────────────────── */
+.alert{padding:12px 15px;border-radius:var(--r);font-size:13px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;font-weight:500;line-height:1.5}
+.alert-warn{background:var(--orange-bg);color:var(--orange);border:1.5px solid #f5c89a}
+.alert-info{background:var(--blue-bg);color:var(--blue);border:1.5px solid #b3d4f0}
+.alert-success{background:#e5f3e8;color:#1e5c28;border:1.5px solid var(--g8)}
+.alert-error{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-mid)}
 
-.save-ind{font-size:11px;color:var(--gj);font-weight:600;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:4px}
+/* ─────────────────────────────────────────
+   SAVE INDICATOR
+───────────────────────────────────────── */
+.save-ind{font-size:11px;color:var(--g4);font-weight:700;opacity:0;transition:opacity .3s;display:flex;align-items:center;gap:5px}
 .save-ind.show{opacity:1}
 
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,46,34,.55);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(3px)}
+/* ─────────────────────────────────────────
+   MODAL
+───────────────────────────────────────── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,20,14,.6);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
 .modal-overlay.open{display:flex}
-.modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-md)}
-.modal-title{font-size:16px;font-weight:700;color:var(--ink);margin-bottom:4px}
-.modal-sub{font-size:13px;color:var(--ink3);margin-bottom:20px}
-.modal-footer{display:flex;gap:8px;margin-top:22px;justify-content:flex-end}
+.modal{background:var(--card);border-radius:var(--rxl);padding:28px;width:500px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:var(--sh3);border:1px solid var(--border)}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:var(--ink);margin-bottom:4px;letter-spacing:-.2px}
+.modal-sub{font-size:13px;color:var(--ink3);margin-bottom:20px;line-height:1.5}
+.modal-footer{display:flex;gap:8px;margin-top:22px;justify-content:flex-end;border-top:1px solid var(--border2);padding-top:18px}
 
+/* ─────────────────────────────────────────
+   NAME EDITOR
+───────────────────────────────────────── */
 .name-ed-item{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.chip{background:var(--border2);border-radius:4px;padding:2px 7px;font-family:monospace;font-size:11px;color:var(--ink3)}
-.expand-icon{display:inline-block;transition:transform .2s;font-size:9px;color:var(--ink3);margin-right:4px}
+.name-ed-item input{flex:1}
+.chip{background:var(--border2);border-radius:var(--r);padding:2px 8px;font-family:monospace;font-size:11px;color:var(--ink3)}
+.expand-icon{display:inline-block;transition:transform .2s;font-size:9px;color:var(--ink4);margin-right:4px}
 .expanded .expand-icon{transform:rotate(90deg)}
+
+/* ─────────────────────────────────────────
+   PDF TEMPLATE
+───────────────────────────────────────── */
 #pdfTpl{position:absolute;left:-9999px;top:0;width:794px;background:#fff;font-family:system-ui,sans-serif;font-size:12px}
-.empty-state{text-align:center;padding:60px 24px;color:var(--ink3)}
-.empty-icon{width:60px;height:60px;border-radius:16px;background:var(--gj-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+
+/* ─────────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────────── */
+.empty-state{text-align:center;padding:64px 24px;color:var(--ink3)}
+.empty-icon{width:64px;height:64px;border-radius:18px;background:var(--g10);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;border:1.5px solid var(--g9)}
+
+/* ─────────────────────────────────────────
+   JORNADAS DESCOLGADAS
+───────────────────────────────────────── */
+.desc-card{background:var(--card);border:1.5px solid #f5c89a;border-radius:var(--rl);margin-bottom:12px;overflow:hidden;box-shadow:var(--sh1)}
+.desc-card.manual{border-color:var(--border)}
+.desc-card-header{padding:12px 16px;display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#fffbf5 0%,#fef7ed 100%);border-bottom:1px solid #fdebd0}
+.desc-card.manual .desc-card-header{background:var(--border2);border-bottom-color:var(--border)}
+.desc-tag{padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.tag-suelto{background:var(--red-bg);color:var(--red)}
+.tag-sincierre{background:var(--orange-bg);color:var(--orange)}
+.tag-descsinreg{background:var(--purple-bg);color:var(--purple)}
+.tag-manual{background:var(--g10);color:var(--g2)}
+.desc-card-body{padding:14px 16px}
+.desc-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.desc-edit-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
+.desc-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.btn-resolver{background:#e5f3e8;color:#1e5c28;border:1.5px solid var(--g8)}
+.btn-resolver:hover{background:var(--g8)}
+.btn-excluir{background:var(--red-bg);color:var(--red);border:1.5px solid var(--red-mid)}
+.btn-excluir:hover{background:var(--red-mid)}
+
+/* ─────────────────────────────────────────
+   PDF EDITOR
+───────────────────────────────────────── */
+.pdf-preview-wrap{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+.pdf-preview-frame{flex:1;min-width:320px;border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;background:#e8e8e8;display:flex;align-items:center;justify-content:center;min-height:400px}
+.pdf-editor-sidebar{width:280px;flex-shrink:0}
+.preview-scale-wrap{overflow:auto;width:100%;padding:16px}
+.descuento-item{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.descuento-item input{flex:1}
+.descuento-item .monto{width:100px;flex-shrink:0}
+.btn-add-desc{border:1.5px dashed var(--border);width:100%;padding:8px;border-radius:var(--r);background:none;color:var(--ink3);cursor:pointer;font-size:12px;transition:all .15s}
+.btn-add-desc:hover{border-color:var(--g5);color:var(--g4);background:var(--g10)}
+.pdf-modal{width:90vw;max-width:1100px}
+.formato-tabs{display:flex;gap:2px;background:var(--border2);border-radius:var(--r);padding:2px;margin-bottom:12px}
+.formato-tab{flex:1;padding:6px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink3);border:none;background:none;transition:all .15s;text-align:center}
+.formato-tab.active{background:var(--card);color:var(--g2);box-shadow:var(--sh1)}
+
+/* ─────────────────────────────────────────
+   CALENDARIO
+───────────────────────────────────────── */
+.cal-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.cal-view-toggle{display:flex;gap:2px;background:var(--border2);border-radius:var(--r);padding:2px}
+.cal-view-btn{padding:6px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--ink3);border:none;background:none;transition:all .15s}
+.cal-view-btn.active{background:var(--card);color:var(--g2);box-shadow:var(--sh1)}
+.cal-grid-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--rl);background:var(--card);box-shadow:var(--sh1)}
+.cal-grid{border-collapse:collapse;min-width:100%;font-size:12px}
+.cal-grid th{background:linear-gradient(180deg,#f6faf6 0%,#f0f7f1 100%);padding:8px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);white-space:nowrap;text-align:center;position:sticky;top:0;z-index:2}
+.cal-grid th.col-fecha{text-align:left;position:sticky;left:0;z-index:3;background:linear-gradient(180deg,#f6faf6 0%,#f0f7f1 100%)}
+.cal-grid td{padding:4px 6px;border-bottom:1px solid var(--border2);border-right:1px solid var(--border2);vertical-align:middle;min-width:120px}
+.cal-grid td.col-fecha{font-size:11px;font-weight:600;color:var(--ink2);white-space:nowrap;background:var(--card);position:sticky;left:0;z-index:1;min-width:90px;padding:4px 10px}
+.cal-grid tr:last-child td{border-bottom:none}
+.cal-grid tr:hover td{background:#f5fbf7}
+.cal-grid tr:hover td.col-fecha{background:#f5fbf7}
+.dia-feriado td.col-fecha{background:var(--red-bg)!important;color:var(--red)}
+.dia-domingo td.col-fecha{background:var(--orange-bg)!important;color:var(--orange)}
+.dia-sabado td.col-fecha{background:#fffaeb!important;color:#8a6200}
+.turno-cell{display:flex;flex-direction:column;gap:3px}
+.turno-select{border:1.5px solid var(--border);border-radius:var(--r);padding:4px 6px;font-size:11px;font-weight:600;width:100%;cursor:pointer;outline:none;transition:all .15s;background:var(--card);color:var(--ink)}
+.turno-select:focus{border-color:var(--g4)}
+.turno-select.t-manana{background:#e5f3e8;color:#1e5c28;border-color:#a5d6a7}
+.turno-select.t-tarde{background:#fef0e0;color:#9a4010;border-color:#ffcc80}
+.turno-select.t-noche{background:#ede7f6;color:#512da8;border-color:#ce93d8}
+.turno-select.t-diurno{background:var(--border2);color:var(--ink2);border-color:var(--border)}
+.turno-select.t-doble{background:#fce4ec;color:#880e4f;border-color:#f48fb1}
+.horario-inputs{display:flex;align-items:center;gap:3px}
+.horario-input{border:1.5px solid var(--border);border-radius:4px;padding:3px 4px;font-size:10px;width:54px;text-align:center;outline:none;color:var(--ink);transition:all .15s;font-family:inherit}
+.horario-input:focus{border-color:var(--g4)}
+.horario-sep{font-size:10px;color:var(--ink3)}
+.cell-auto{opacity:.55;font-style:italic}
+.cell-edited{opacity:1}
+.cell-edited .turno-select{box-shadow:0 0 0 2px rgba(61,138,88,.2)}
+.emp-cal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.emp-day-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r);padding:12px;transition:all .18s var(--ease)}
+.emp-day-card:hover{box-shadow:var(--sh2);transform:translateY(-1px)}
+.emp-day-card.feriado{border-color:var(--red-mid);background:var(--red-bg)}
+.emp-day-card.domingo{border-color:#ffcc80;background:#fff8e1}
+.emp-day-card.sabado{border-color:#fff176;background:#fffde7}
+.emp-day-fecha{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px}
+.cal-sin-datos{text-align:center;padding:48px;color:var(--ink3);font-size:13px}
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.cal-leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink3)}
+.cal-leg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.btn-cal-apply{background:linear-gradient(135deg,var(--g4) 0%,var(--g3) 100%);color:#fff;border:none;border-radius:var(--r);padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s var(--ease);box-shadow:0 1px 4px rgba(45,112,72,.25);display:inline-flex;align-items:center;gap:6px;font-family:inherit}
+.btn-cal-apply:hover{background:linear-gradient(135deg,var(--g3) 0%,var(--g2) 100%);box-shadow:0 4px 12px rgba(45,112,72,.3);transform:translateY(-1px)}
+.cal-changed-indicator{font-size:11px;color:var(--orange);font-weight:700;display:none;align-items:center;gap:4px}
+.cal-changed-indicator.show{display:inline-flex}
 </style>
 </head>
 <body>
 
 <div class="topbar">
-  <img class="topbar-logo" id="topLogo" src="data:image/png;base64,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" alt="Logo">
+  <img class="topbar-logo" id="topLogo" src="data:image/png;base64,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" alt="Logo">
   <div class="topbar-divider"></div>
   <div>
     <div class="topbar-title" id="topEmpresa">VITAGRO</div>
@@ -201,6 +575,15 @@ tr.data-row:hover td{background:#F7FDF9;cursor:pointer}
   <button class="nav-item" id="nav-reporte" onclick="goPanel('panelReporte',this)" style="opacity:.45;pointer-events:none">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
     <span>Reporte</span>
+  </button>
+  <button class="nav-item" id="nav-descolgadas" onclick="goPanel('panelDescolgadas',this)" style="opacity:.45;pointer-events:none">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>Jornadas pendientes</span>
+    <span class="nav-badge" id="badgeDesc" style="display:none">0</span>
+  </button>
+  <button class="nav-item" id="nav-calendario" onclick="goPanel('panelCalendario',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h2v2H8z M13 14h2v2h-2z"/></svg>
+    <span>Calendario de turnos</span>
   </button>
   <div class="nav-divider"></div>
   <div class="nav-section">Sistema</div>
@@ -379,6 +762,73 @@ tr.data-row:hover td{background:#F7FDF9;cursor:pointer}
   </tr></thead><tbody id="body_res"></tbody></table></div></div>
 </div>
 
+<!-- PANEL CALENDARIO DE TURNOS -->
+<div class="panel" id="panelCalendario">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Calendario de turnos</div>
+      <div class="page-sub">Configurá manualmente el turno de cada día para cada empleado. Los cambios tienen prioridad sobre la rotación automática al liquidar.</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <span class="cal-changed-indicator" id="calChangedInd">● Hay cambios sin aplicar</span>
+      <button class="btn-cal-apply" onclick="aplicarCambiosCalendario()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px"><polyline points="20 6 9 17 4 12"/></svg>
+        Aplicar cambios al reporte
+      </button>
+    </div>
+  </div>
+
+  <div class="cal-toolbar">
+    <div class="cal-view-toggle">
+      <button class="cal-view-btn active" id="calBtnGrilla" onclick="setCalView('grilla')">Grilla general</button>
+      <button class="cal-view-btn" id="calBtnEmp" onclick="setCalView('empleado')">Por empleado</button>
+    </div>
+    <div id="calEmpSelector" style="display:none">
+      <select class="form-input" id="calEmpSel" onchange="renderCalendario()" style="width:180px"></select>
+    </div>
+    <div style="display:flex;gap:8px;margin-left:auto;align-items:center">
+      <label style="font-size:11px;color:var(--ink3);font-weight:600">Período:</label>
+      <select class="form-input" id="calSectorFiltro" onchange="renderCalendario()" style="width:130px">
+        <option value="todos">Todos</option>
+        <option value="Planta">Planta</option>
+        <option value="Comercial">Comercial</option>
+      </select>
+      <button class="btn btn-sm" onclick="resetearCalendario()">Restablecer automático</button>
+    </div>
+  </div>
+
+  <div class="cal-legend">
+    <div class="cal-leg-item"><div class="cal-leg-dot" style="background:#E8F5E9;border:1px solid #A5D6A7"></div>Mañana (06-14)</div>
+    <div class="cal-leg-item"><div class="cal-leg-dot" style="background:#FFF3E0;border:1px solid #FFCC80"></div>Tarde (14-22)</div>
+    <div class="cal-leg-item"><div class="cal-leg-dot" style="background:#EDE7F6;border:1px solid #CE93D8"></div>Noche (22-06)</div>
+    <div class="cal-leg-item"><div class="cal-leg-dot" style="background:var(--border2);border:1px solid var(--border)"></div>Diurno (08-16)</div>
+    <div class="cal-leg-item"><div class="cal-leg-dot" style="background:#FCE4EC;border:1px solid #F48FB1"></div>Turno doble</div>
+    <div class="cal-leg-item" style="margin-left:8px;font-style:italic">Celdas en gris = rotación automática · Celdas con borde verde = editadas manualmente</div>
+  </div>
+
+  <div id="calContenido">
+    <div class="cal-sin-datos">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5" style="display:block;margin:0 auto 10px"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      Procesá un log primero para ver el calendario de turnos del período
+    </div>
+  </div>
+</div>
+
+<!-- PANEL JORNADAS DESCOLGADAS -->
+<div class="panel" id="panelDescolgadas">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Jornadas pendientes de revisión</div>
+      <div class="page-sub">Marcaciones incompletas que requieren corrección manual antes de liquidar</div>
+    </div>
+    <button class="btn btn-sm btn-outline" onclick="agregarJornadaManual()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Agregar jornada manual
+    </button>
+  </div>
+  <div id="descolgadasList"></div>
+</div>
+
 <!-- PANEL CONFIG -->
 <div class="panel" id="panelConfig">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
@@ -507,25 +957,67 @@ tr.data-row:hover td{background:#F7FDF9;cursor:pointer}
 </div><!-- /main -->
 </div><!-- /layout -->
 
-<!-- MODAL PDF -->
+<!-- MODAL PDF EDITOR -->
 <div class="modal-overlay" id="modalPDF">
-  <div class="modal">
-    <div class="modal-title">Generar PDF de liquidacion</div>
-    <div class="modal-sub">Selecciona el tipo de reporte y el periodo</div>
-    <div class="form-group" style="margin-bottom:14px"><label class="form-label">Periodo</label><input class="form-input" id="pdf_periodo" placeholder="Ej: Abril 2025"></div>
-    <div class="form-group" style="margin-bottom:14px">
-      <label class="form-label">Tipo de PDF</label>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
-        <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px"><input type="radio" name="pdf_tipo" value="global" checked> Liquidacion global (un PDF con todos)</label>
-        <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px"><input type="radio" name="pdf_tipo" value="individual"> Recibos individuales (un PDF por empleado)</label>
-        <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:13px"><input type="radio" name="pdf_tipo" value="ambos"> Ambos</label>
+  <div class="modal pdf-modal">
+    <div class="modal-title">Liquidación — Editor y vista previa</div>
+    <div class="modal-sub">Editá el recibo antes de generar el PDF</div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap">
+
+      <!-- Sidebar editor -->
+      <div class="pdf-editor-sidebar">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:8px">Empleado</div>
+        <select class="form-input" id="pdf_emp" onchange="actualizarPreviewPDF()" style="margin-bottom:12px"><option value="">Todos</option></select>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:8px">Período</div>
+        <input class="form-input" id="pdf_periodo" placeholder="Ej: Abril 2025" oninput="actualizarPreviewPDF()" style="margin-bottom:12px">
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:8px">Formato de página</div>
+        <div class="formato-tabs" style="margin-bottom:12px">
+          <button class="formato-tab active" id="fmt1" onclick="setFormato(1)">1 recibo / hoja</button>
+          <button class="formato-tab" id="fmt2" onclick="setFormato(2)">2 recibos / hoja</button>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:8px">Descuentos</div>
+        <div id="descuentosList" style="margin-bottom:8px"></div>
+        <button class="btn-add-desc" onclick="agregarDescuento()">+ Agregar descuento</button>
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin:12px 0 8px">Total manual</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <label style="font-size:12px;color:var(--ink3);white-space:nowrap">
+            <input type="checkbox" id="chkTotalManual" onchange="toggleTotalManual()"> Editar total
+          </label>
+        </div>
+        <input type="number" class="form-input" id="inputTotalManual" placeholder="Monto final $" oninput="actualizarPreviewPDF()" style="margin-top:6px;display:none">
+
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin:12px 0 8px">Notas al pie</div>
+        <textarea class="form-input" id="pdf_notas" placeholder="Aclaraciones, observaciones..." rows="3" oninput="actualizarPreviewPDF()" style="min-height:70px"></textarea>
+      </div>
+
+      <!-- Vista previa -->
+      <div style="flex:1;min-width:300px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);margin-bottom:8px">Vista previa</div>
+        <div class="pdf-preview-frame" id="pdfPreviewFrame">
+          <div class="preview-scale-wrap">
+            <div id="pdfPreviewContent" style="font-size:11px;color:var(--ink3);text-align:center;padding:40px">
+              Seleccioná un empleado para ver la vista previa
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="form-group"><label class="form-label">Filtrar empleado</label><select class="form-input" id="pdf_emp"><option value="">Todos</option></select></div>
+
     <div id="pdfProg" style="display:none;margin-top:10px" class="alert alert-info"></div>
     <div class="modal-footer">
       <button class="btn" onclick="cerrarModal('modalPDF')">Cancelar</button>
-      <button class="btn btn-primary" onclick="generarPDF()">Generar</button>
+      <button class="btn btn-outline" onclick="generarPDF('individual')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Recibo individual
+      </button>
+      <button class="btn btn-primary" onclick="generarPDF('todos')">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Todos los recibos
+      </button>
     </div>
   </div>
 </div>
@@ -769,23 +1261,9 @@ function procesarEmpleadoDia(marcaciones){
 }
 
 function calcularPago(jornada,nombre,fecha){
-  var turno=getTurno(nombre,fecha),tipoDia=getTipoDia(fecha);
-  var mult=1;
-  if(tipoDia==='Sabado'&&jornada.hsTrabajadas>4)mult=2;
-  if(tipoDia==='Domingo'||tipoDia==='Feriado')mult=2;
-  var tD=parseFloat(cfg('cfg_tarifa_diurna'))||4500;
-  var tN=parseFloat(cfg('cfg_tarifa_nocturna'))||5300;
-  var ep=(parseFloat(cfg('cfg_extra_pct'))||12)/100;
-  var tBase=turno.tipo==='noche'?tN:tD;
-  var hsN=jornada.hsTrabajadas-jornada.hsExtra;
-  var total=(hsN*tBase+jornada.hsExtra*tBase*(1+ep))*mult;
-  var esN=turno.tipo==='noche';
-  return{total:total,turno:turno,tipoDia:tipoDia,mult:mult,
-    desglose:{normDiurna:(!esN&&mult===1)?hsN:0,normNocturna:(esN&&mult===1)?hsN:0,
-      extraDiurna:(!esN&&mult===1)?jornada.hsExtra:0,extraNocturna:(esN&&mult===1)?jornada.hsExtra:0,
-      hsSabado:(tipoDia==='Sabado'&&mult===2)?jornada.hsTrabajadas:0,
-      hsDomingo:(tipoDia==='Domingo')?jornada.hsTrabajadas:0,
-      hsFeriado:(tipoDia==='Feriado')?jornada.hsTrabajadas:0}};
+  // Usa override manual si existe, si no la rotación automática
+  var turno=getTurnoConOverride(nombre,fecha);
+  return calcularPagoConTurno(jornada,turno,fecha);
 }
 
 // ======== PROCESAR ========
@@ -856,23 +1334,50 @@ function confirmarNombres(){
 }
 
 function generarReporte(agrupado,saltadas,desde,hasta){
-  var jornadas=[],todosDescansos=[];
+  var jornadas=[],todosDescansos=[],descolgadas=[];
   Object.keys(agrupado).forEach(function(k){
-    var v=agrupado[k],j=procesarEmpleadoDia(v.marcaciones);
+    var v=agrupado[k];
+    var mcs=v.marcaciones.slice().sort(function(a,b){return a.dt-b.dt;});
+
+    // Detectar descolgadas: 1 sola marcación
+    if(mcs.length<2){
+      descolgadas.push({
+        tipo:'suelto', enNo:v.enNo, nombre:v.nombre||'Sin nombre',
+        fecha:v.fecha, marcaciones:mcs, excluida:false,
+        horaAgregada:null, descansosCerrados:false
+      });
+      return;
+    }
+
+    var j=procesarEmpleadoDia(v.marcaciones);
     if(!j)return;
+
+    // Detectar descanso sin regreso
+    var tieneDescSinReg=j.descansos.some(function(d){return d.sinRegreso;});
+    if(tieneDescSinReg){
+      descolgadas.push({
+        tipo:'desc_sin_reg', enNo:v.enNo, nombre:v.nombre||'Sin nombre',
+        fecha:v.fecha, marcaciones:mcs, jornada:j, excluida:false,
+        descansosCerrados:false
+      });
+      // Igual la procesamos con lo que hay
+    }
+
     var pago=calcularPago(j,v.nombre,v.fecha);
     jornadas.push({enNo:v.enNo,nombre:v.nombre,sector:getSector(v.nombre),fecha:v.fecha,
       entrada:j.entrada,salida:j.salida,descansos:j.descansos,
       totalDescMin:j.totalDescMin,descDescMin:j.descDescMin,
       hsTrabajadas:j.hsTrabajadas,hsExtra:j.hsExtra,
-      total:pago.total,turno:pago.turno,tipoDia:pago.tipoDia,mult:pago.mult,desglose:pago.desglose});
+      total:pago.total,turno:pago.turno,tipoDia:pago.tipoDia,mult:pago.mult,desglose:pago.desglose,
+      // Ediciones manuales del PDF
+      _descuentos:[],_notas:'',_totalManual:null});
     j.descansos.forEach(function(d){todosDescansos.push({nombre:v.nombre,fecha:v.fecha,salida:d.salida,regreso:d.regreso,duracion:d.duracion,sinRegreso:d.sinRegreso});});
   });
   jornadas.sort(function(a,b){var r=a.fecha.localeCompare(b.fecha);return r!==0?r:a.nombre.localeCompare(b.nombre);});
 
   var resumen={};
   jornadas.forEach(function(j){
-    if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[]};
+    if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[],_descuentos:[],_notas:'',_totalManual:null};
     var r=resumen[j.nombre];
     r.dias++;r.horas+=j.hsTrabajadas;r.extra+=j.hsExtra;r.descMin+=j.descDescMin;
     if(j.mult===2)r.dobles++;r.total+=j.total;
@@ -882,7 +1387,7 @@ function generarReporte(agrupado,saltadas,desde,hasta){
     r.jornadas.push(j);
   });
 
-  datosGlobales={jornadas:jornadas,descansos:todosDescansos,resumen:Object.values(resumen)};
+  datosGlobales={jornadas:jornadas,descansos:todosDescansos,resumen:Object.values(resumen),descolgadas:descolgadas};
 
   var periodoStr=fmtF(desde)+' al '+fmtF(hasta);
   document.getElementById('reportePeriodo').textContent=periodoStr+(saltadas>0?' · '+saltadas+' duplicadas omitidas':'');
@@ -903,7 +1408,25 @@ function generarReporte(agrupado,saltadas,desde,hasta){
     [se,sp].forEach(function(s){var o=document.createElement('option');o.value=n;o.textContent=n;s.appendChild(o);});
   });
 
+  // Habilitar nav reporte
   var navR=document.getElementById('nav-reporte');navR.style.opacity='';navR.style.pointerEvents='';
+
+  // Habilitar y actualizar nav descolgadas
+  var navD=document.getElementById('nav-descolgadas');
+  if(descolgadas.length>0){
+    navD.style.opacity='';navD.style.pointerEvents='';
+    document.getElementById('badgeDesc').style.display='';
+    document.getElementById('badgeDesc').textContent=descolgadas.length;
+  } else {
+    navD.style.opacity='.45';navD.style.pointerEvents='none';
+    document.getElementById('badgeDesc').style.display='none';
+  }
+
+  renderDescolgadas();
+  // Inicializar calendario de turnos
+  var navCal=document.getElementById('nav-calendario');
+  navCal.style.opacity='';navCal.style.pointerEvents='';
+  initCalendario();
   goPanel('panelReporte',navR);
   renderReportes();
 }
@@ -1150,121 +1673,687 @@ function exportarCSV(){
 // ======== PDF ========
 function abrirModalPDF(){if(!datosGlobales){alert('Procesa el log primero.');return;}document.getElementById('modalPDF').classList.add('open');}
 
-function buildRecibo(r,periodo,empresa){
+// ======== JORNADAS DESCOLGADAS ========
+function renderDescolgadas(){
+  if(!datosGlobales)return;
+  var lista=document.getElementById('descolgadasList');
+  lista.innerHTML='';
+  var items=datosGlobales.descolgadas;
+
+  if(!items.length){
+    lista.innerHTML='<div class="empty-state"><div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--gj)" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg></div><h3>Sin jornadas pendientes</h3><p>Todas las jornadas del período están completas</p></div>';
+    return;
+  }
+
+  items.forEach(function(item,idx){
+    if(item.excluida)return;
+    var tagClass=item.tipo==='suelto'?'tag-suelto':item.tipo==='desc_sin_reg'?'tag-descsinreg':'tag-manual';
+    var tagLabel=item.tipo==='suelto'?'Marcación suelta':item.tipo==='desc_sin_reg'?'Descanso sin cierre':'Jornada manual';
+    var marcStr=item.marcaciones.map(function(m){return fmtH(m.dt);}).join(' · ')||'—';
+    var div=document.createElement('div');
+    div.className='desc-card'+(item.tipo==='manual'?' manual':'');
+    div.id='dcard_'+idx;
+
+    var bodyHtml='<div class="desc-card-body">';
+    bodyHtml+='<div style="font-size:12px;color:var(--ink3);margin-bottom:10px">Marcaciones registradas: <strong>'+marcStr+'</strong></div>';
+
+    if(item.tipo==='suelto'||item.tipo==='manual'){
+      bodyHtml+='<div class="desc-edit-grid">';
+      bodyHtml+='<div class="form-group"><label class="form-label">Hora entrada</label><input type="time" class="form-input" id="de_entrada_'+idx+'" value="'+(item._entrada||'')+'"></div>';
+      bodyHtml+='<div class="form-group"><label class="form-label">Hora salida</label><input type="time" class="form-input" id="de_salida_'+idx+'" value="'+(item._salida||'')+'"></div>';
+      bodyHtml+='</div>';
+      if(item.tipo==='manual'){
+        bodyHtml+='<div class="desc-edit-grid-3" style="margin-top:8px">';
+        bodyHtml+='<div class="form-group"><label class="form-label">Empleado</label><input type="text" class="form-input" id="de_nombre_'+idx+'" value="'+(item.nombre||'')+'"></div>';
+        bodyHtml+='<div class="form-group"><label class="form-label">Fecha</label><input type="date" class="form-input" id="de_fecha_'+idx+'" value="'+(item.fecha||'')+'"></div>';
+        bodyHtml+='<div class="form-group"><label class="form-label">Sector</label><select class="form-input" id="de_sector_'+idx+'"><option>Planta</option><option>Comercial</option><option>Sin sector</option></select></div>';
+        bodyHtml+='</div>';
+      }
+    }
+
+    if(item.tipo==='desc_sin_reg'){
+      bodyHtml+='<div class="form-group" style="max-width:200px"><label class="form-label">Hora regreso de descanso</label><input type="time" class="form-input" id="de_regreso_'+idx+'"></div>';
+    }
+
+    bodyHtml+='<div class="desc-actions">';
+    bodyHtml+='<button class="btn btn-sm btn-resolver" onclick="resolverDescolgada('+idx+')">✓ Aplicar y agregar al reporte</button>';
+    bodyHtml+='<button class="btn btn-sm btn-excluir" onclick="excluirDescolgada('+idx+')">✕ Excluir del cálculo</button>';
+    bodyHtml+='</div></div>';
+
+    div.innerHTML='<div class="desc-card-header">'
+      +'<div class="avatar '+getAvColor(item.nombre)+'">'+ini(item.nombre)+'</div>'
+      +'<div style="flex:1"><strong>'+item.nombre+'</strong> &nbsp;·&nbsp; <span style="color:var(--ink3)">'+fmtF(item.fecha)+'</span></div>'
+      +'<span class="desc-tag '+tagClass+'">'+tagLabel+'</span>'
+      +'</div>'+bodyHtml;
+    lista.appendChild(div);
+  });
+}
+
+function resolverDescolgada(idx){
+  var item=datosGlobales.descolgadas[idx];
+  var fecha=item.fecha;
+  var nombre=item.nombre;
+
+  if(item.tipo==='suelto'||item.tipo==='manual'){
+    var eStr=document.getElementById('de_entrada_'+idx).value;
+    var sStr=document.getElementById('de_salida_'+idx).value;
+    if(!eStr||!sStr){alert('Completá la hora de entrada y salida.');return;}
+    if(item.tipo==='manual'){
+      nombre=document.getElementById('de_nombre_'+idx).value.trim()||nombre;
+      fecha=document.getElementById('de_fecha_'+idx).value||fecha;
+      item.nombre=nombre;item.fecha=fecha;
+    }
+    var entrada=new Date(fecha+'T'+eStr+':00');
+    var salida=new Date(fecha+'T'+sStr+':00');
+    // Si salida < entrada, es turno nocturno que pasa la medianoche
+    if(salida<=entrada){
+      var sig=new Date(fecha);sig.setDate(sig.getDate()+1);
+      salida=new Date(sig.toISOString().slice(0,10)+'T'+sStr+':00');
+    }
+    var jArt={entrada:entrada,salida:salida,descansos:[],totalDescMin:0,descDescMin:0};
+    var hsBase2=parseFloat(cfg('cfg_horas_base'))||8;
+    var hsTot=minEntre(entrada,salida)/60;
+    jArt.hsTrabajadas=hsTot;
+    jArt.hsExtra=Math.max(0,hsTot-hsBase2);
+    var pago=calcularPago(jArt,nombre,fecha);
+    agregarJornadaAlReporte({enNo:item.enNo,nombre:nombre,fecha:fecha,jornada:jArt,pago:pago});
+
+  } else if(item.tipo==='desc_sin_reg'){
+    var rStr=document.getElementById('de_regreso_'+idx).value;
+    if(!rStr){alert('Ingresá la hora de regreso del descanso.');return;}
+    // Recalcular la jornada con el descanso cerrado
+    var mcs=item.marcaciones.slice();
+    var regreso=new Date(fecha+'T'+rStr+':00');
+    mcs.push({dt:regreso,enNo:item.enNo,nombre:nombre,fecha:fecha,hora:rStr});
+    var jNueva=procesarEmpleadoDia(mcs);
+    if(jNueva){
+      var pagoN=calcularPago(jNueva,nombre,fecha);
+      // Actualizar la jornada existente en datosGlobales
+      var jorIdx=datosGlobales.jornadas.findIndex(function(j){return j.nombre===nombre&&j.fecha===fecha;});
+      if(jorIdx>=0){
+        var j2=datosGlobales.jornadas[jorIdx];
+        j2.hsTrabajadas=jNueva.hsTrabajadas;j2.hsExtra=jNueva.hsExtra;
+        j2.descansos=jNueva.descansos;j2.totalDescMin=jNueva.totalDescMin;j2.descDescMin=jNueva.descDescMin;
+        j2.total=pagoN.total;j2.desglose=pagoN.desglose;
+      }
+    }
+  }
+
+  item.excluida=true;
+  recalcularResumen();
+  renderDescolgadas();
+  actualizarBadgeDesc();
+  alert('✓ Jornada aplicada al reporte correctamente.');
+}
+
+function excluirDescolgada(idx){
+  if(!confirm('Excluir esta jornada del cálculo? No se incluirá en la liquidación.'))return;
+  datosGlobales.descolgadas[idx].excluida=true;
+  // Remover del reporte si estaba incluida
+  var item=datosGlobales.descolgadas[idx];
+  datosGlobales.jornadas=datosGlobales.jornadas.filter(function(j){
+    return!(j.nombre===item.nombre&&j.fecha===item.fecha);
+  });
+  recalcularResumen();
+  renderDescolgadas();
+  actualizarBadgeDesc();
+}
+
+function agregarJornadaAlReporte(obj){
+  var j={enNo:obj.enNo,nombre:obj.nombre,sector:getSector(obj.nombre),fecha:obj.fecha,
+    entrada:obj.jornada.entrada,salida:obj.jornada.salida,descansos:obj.jornada.descansos||[],
+    totalDescMin:obj.jornada.totalDescMin||0,descDescMin:obj.jornada.descDescMin||0,
+    hsTrabajadas:obj.jornada.hsTrabajadas,hsExtra:obj.jornada.hsExtra,
+    total:obj.pago.total,turno:obj.pago.turno,tipoDia:obj.pago.tipoDia,mult:obj.pago.mult,
+    desglose:obj.pago.desglose,_descuentos:[],_notas:'',_totalManual:null};
+  // Reemplazar si ya existe
+  var ex=datosGlobales.jornadas.findIndex(function(jj){return jj.nombre===j.nombre&&jj.fecha===j.fecha;});
+  if(ex>=0)datosGlobales.jornadas[ex]=j;
+  else datosGlobales.jornadas.push(j);
+  datosGlobales.jornadas.sort(function(a,b){var r=a.fecha.localeCompare(b.fecha);return r!==0?r:a.nombre.localeCompare(b.nombre);});
+  recalcularResumen();
+  renderReportes();
+}
+
+function agregarJornadaManual(){
+  if(!datosGlobales){alert('Primero procesá un log.');return;}
+  datosGlobales.descolgadas.push({tipo:'manual',enNo:'',nombre:'',fecha:toISO(new Date()),marcaciones:[],excluida:false,_entrada:'',_salida:''});
+  var navD=document.getElementById('nav-descolgadas');
+  navD.style.opacity='';navD.style.pointerEvents='';
+  renderDescolgadas();
+  actualizarBadgeDesc();
+  goPanel('panelDescolgadas',navD);
+}
+
+function recalcularResumen(){
+  if(!datosGlobales)return;
+  var resumen={};
+  datosGlobales.jornadas.forEach(function(j){
+    if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[],_descuentos:j._descuentos||[],_notas:j._notas||'',_totalManual:j._totalManual||null};
+    var r=resumen[j.nombre];
+    r.dias++;r.horas+=j.hsTrabajadas;r.extra+=j.hsExtra;r.descMin+=j.descDescMin;
+    if(j.mult===2)r.dobles++;r.total+=j.total;
+    r.normDiurna+=j.desglose.normDiurna;r.normNocturna+=j.desglose.normNocturna;
+    r.extraDiurna+=j.desglose.extraDiurna;r.extraNocturna+=j.desglose.extraNocturna;
+    r.hsSabado+=j.desglose.hsSabado;r.hsDomingo+=j.desglose.hsDomingo;r.hsFeriado+=j.desglose.hsFeriado;
+    r.jornadas.push(j);
+  });
+  datosGlobales.resumen=Object.values(resumen);
+  // Actualizar métricas
+  var totHs=datosGlobales.jornadas.reduce(function(s,j){return s+j.hsTrabajadas;},0);
+  var totEx=datosGlobales.jornadas.reduce(function(s,j){return s+j.hsExtra;},0);
+  var totP=datosGlobales.jornadas.reduce(function(s,j){return s+j.total;},0);
+  document.getElementById('met_emp').textContent=Object.keys(resumen).length;
+  document.getElementById('met_hs').textContent=totHs.toFixed(1)+'h';
+  document.getElementById('met_ex').textContent=totEx.toFixed(1)+'h';
+  document.getElementById('met_tot').textContent='$'+Math.round(totP).toLocaleString('es-AR');
+}
+
+function actualizarBadgeDesc(){
+  if(!datosGlobales)return;
+  var pend=datosGlobales.descolgadas.filter(function(d){return!d.excluida;}).length;
+  var badge=document.getElementById('badgeDesc');
+  if(pend>0){badge.style.display='';badge.textContent=pend;}
+  else badge.style.display='none';
+}
+
+// ======== PDF EDITOR ========
+var pdfFormato=1; // 1 o 2 recibos por hoja
+
+function setFormato(n){
+  pdfFormato=n;
+  document.getElementById('fmt1').classList.toggle('active',n===1);
+  document.getElementById('fmt2').classList.toggle('active',n===2);
+  actualizarPreviewPDF();
+}
+
+function toggleTotalManual(){
+  var chk=document.getElementById('chkTotalManual');
+  document.getElementById('inputTotalManual').style.display=chk.checked?'':'none';
+  actualizarPreviewPDF();
+}
+
+function agregarDescuento(){
+  var lista=document.getElementById('descuentosList');
+  var idx=lista.children.length;
+  var div=document.createElement('div');div.className='descuento-item';
+  div.innerHTML='<input class="form-input" placeholder="Concepto (ej: Adelanto)" id="dconc_'+idx+'" oninput="actualizarPreviewPDF()">'
+    +'<input type="number" class="form-input monto" placeholder="Monto $" id="dmonto_'+idx+'" oninput="actualizarPreviewPDF()">'
+    +'<button class="btn btn-xs btn-danger" onclick="this.parentNode.remove();actualizarPreviewPDF()">✕</button>';
+  lista.appendChild(div);
+}
+
+function getDescuentos(){
+  var lista=document.getElementById('descuentosList');
+  var items=[];
+  for(var i=0;i<lista.children.length;i++){
+    var c=lista.children[i].querySelector('[id^=dconc_]');
+    var m=lista.children[i].querySelector('[id^=dmonto_]');
+    if(c&&m&&c.value&&m.value)items.push({concepto:c.value,monto:parseFloat(m.value)||0});
+  }
+  return items;
+}
+
+function abrirModalPDF(){
+  if(!datosGlobales){alert('Procesa el log primero.');return;}
+  document.getElementById('modalPDF').classList.add('open');
+  // Set default periodo
+  var rp=document.getElementById('reportePeriodo').textContent.split('·')[0].trim();
+  if(rp&&rp!=='—')document.getElementById('pdf_periodo').value=rp;
+  actualizarPreviewPDF();
+}
+
+function actualizarPreviewPDF(){
+  if(!datosGlobales)return;
+  var empSel=document.getElementById('pdf_emp').value;
+  var lista=empSel?datosGlobales.resumen.filter(function(r){return r.nombre===empSel;}):datosGlobales.resumen;
+  if(!lista.length){document.getElementById('pdfPreviewContent').innerHTML='<div style="color:var(--ink3);padding:40px;text-align:center">Sin datos para mostrar</div>';return;}
+
+  var periodo=document.getElementById('pdf_periodo').value||'—';
+  var empresa=cfg('cfg_empresa')||'VITAGRO';
+  var descuentos=getDescuentos();
+  var notas=document.getElementById('pdf_notas').value;
+  var chkManual=document.getElementById('chkTotalManual').checked;
+  var totalManual=chkManual?parseFloat(document.getElementById('inputTotalManual').value)||null:null;
+
+  // Preview del primer empleado (o único)
+  var r=lista[0];
+  var htmlPreview=buildReciboHTML(r,periodo,empresa,descuentos,notas,totalManual,pdfFormato);
+
+  var wrap=document.getElementById('pdfPreviewContent');
+  wrap.innerHTML='';
+  var frame=document.createElement('div');
+  frame.style.cssText='width:595px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);transform-origin:top left';
+  frame.innerHTML=htmlPreview;
+  wrap.appendChild(frame);
+
+  // Escalar preview para que entre en el panel
+  var frameW=document.getElementById('pdfPreviewFrame').offsetWidth-32;
+  var scale=Math.min(1,frameW/595);
+  frame.style.transform='scale('+scale+')';
+  frame.style.marginBottom='-'+(595*(1-scale)*1.4)+'px';
+  if(lista.length>1){
+    var note=document.createElement('div');
+    note.style.cssText='text-align:center;font-size:11px;color:var(--ink3);margin-top:8px;padding:6px;background:var(--border2);border-radius:4px';
+    note.textContent='Mostrando recibo de '+r.nombre+'. Se generarán '+lista.length+' recibos en total.';
+    wrap.appendChild(note);
+  }
+}
+
+function buildReciboHTML(r,periodo,empresa,descuentos,notas,totalManual,formato){
+  descuentos=descuentos||[];notas=notas||'';
   var tD=parseFloat(cfg('cfg_tarifa_diurna'))||4500,tN=parseFloat(cfg('cfg_tarifa_nocturna'))||5300;
   var ep=(parseFloat(cfg('cfg_extra_pct'))||12)/100;
+
   var filas='';
-  r.jornadas.forEach(function(j){
+  (r.jornadas||[]).forEach(function(j){
     var esN=j.turno&&j.turno.tipo==='noche',tBase=esN?tN:tD;
     var hsN=j.hsTrabajadas-j.hsExtra;
     var hsDbl=(j.desglose.hsSabado||0)+(j.desglose.hsDomingo||0)+(j.desglose.hsFeriado||0);
-    filas+='<tr style="border-bottom:1px solid #e8f2eb"><td style="padding:6px 8px">'+fmtF(j.fecha)+'</td>'
-      +'<td style="padding:6px 8px">'+(j.turno?j.turno.label:'-')+'</td>'
-      +'<td style="padding:6px 8px">'+fmtH(j.entrada)+'–'+fmtH(j.salida)+'</td>'
-      +'<td style="padding:6px 8px;text-align:right">'+hsN.toFixed(2)+'</td>'
-      +'<td style="padding:6px 8px;text-align:right">'+(j.hsExtra>0?j.hsExtra.toFixed(2):'-')+'</td>'
-      +'<td style="padding:6px 8px;text-align:right">'+(hsDbl>0?hsDbl.toFixed(2):'-')+'</td>'
-      +'<td style="padding:6px 8px;text-align:right">'+(j.mult===2?'×2':'-')+'</td>'
-      +'<td style="padding:6px 8px;text-align:right;font-weight:700">'+pesos(j.total)+'</td></tr>';
+    filas+='<tr style="border-bottom:1px solid #e8f2eb">'
+      +'<td style="padding:5px 7px">'+fmtF(j.fecha)+'</td>'
+      +'<td style="padding:5px 7px">'+(j.turno?j.turno.label:'-')+'</td>'
+      +'<td style="padding:5px 7px">'+fmtH(j.entrada)+'–'+fmtH(j.salida)+'</td>'
+      +'<td style="padding:5px 7px;text-align:right">'+hsN.toFixed(2)+'</td>'
+      +'<td style="padding:5px 7px;text-align:right">'+(j.hsExtra>0?j.hsExtra.toFixed(2):'-')+'</td>'
+      +'<td style="padding:5px 7px;text-align:right">'+(hsDbl>0?hsDbl.toFixed(2):'-')+'</td>'
+      +'<td style="padding:5px 7px;text-align:right">'+(j.mult===2?'×2':'-')+'</td>'
+      +'<td style="padding:5px 7px;text-align:right;font-weight:700">'+pesos(j.total)+'</td>'
+      +'</tr>';
   });
-  return '<div style="padding:44px;font-family:system-ui,sans-serif;font-size:12px;color:#1a2e22;page-break-after:always">'
-    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;padding-bottom:16px;border-bottom:3px solid #4A7C59">'
-    +'<div style="display:flex;align-items:center;gap:14px">'
-    +'<img src="'+LOGO_DATA+'" style="height:48px;width:auto" alt="logo">'
-    +'<div><div style="font-size:22px;font-weight:800;color:#2B6B4E;letter-spacing:-.3px">'+empresa+'</div>'
-    +'<div style="color:#6b8f78;font-size:12px;margin-top:2px">Liquidacion de haberes &mdash; '+periodo+'</div></div></div>'
-    +'<div style="text-align:right;font-size:11px;color:#6b8f78"><div>Emitido: '+new Date().toLocaleDateString('es-AR')+'</div></div></div>'
-    +'<div style="background:#f4f9f5;border-radius:10px;padding:16px 20px;margin-bottom:22px;display:flex;gap:36px">'
-    +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.5px">Empleado</div><div style="font-size:17px;font-weight:700;margin-top:3px">'+r.nombre+'</div></div>'
-    +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.5px">Sector</div><div style="font-size:14px;font-weight:600;margin-top:3px">'+r.sector+'</div></div>'
-    +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.5px">Dias trabajados</div><div style="font-size:14px;font-weight:600;margin-top:3px">'+r.dias+'</div></div>'
-    +'<div><div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.5px">Hs totales</div><div style="font-size:14px;font-weight:600;margin-top:3px">'+r.horas.toFixed(2)+'h</div></div></div>'
-    +'<table style="width:100%;border-collapse:collapse;margin-bottom:22px"><thead>'
-    +'<tr style="background:#2B6B4E;color:#fff"><th style="padding:8px;text-align:left;font-size:11px">Fecha</th>'
-    +'<th style="padding:8px;text-align:left;font-size:11px">Turno</th>'
-    +'<th style="padding:8px;text-align:left;font-size:11px">Horario</th>'
-    +'<th style="padding:8px;text-align:right;font-size:11px">Hs norm.</th>'
-    +'<th style="padding:8px;text-align:right;font-size:11px">Hs extra</th>'
-    +'<th style="padding:8px;text-align:right;font-size:11px">Hs doble</th>'
-    +'<th style="padding:8px;text-align:right;font-size:11px">Mult.</th>'
-    +'<th style="padding:8px;text-align:right;font-size:11px">Subtotal</th></tr></thead>'
-    +'<tbody>'+filas+'</tbody></table>'
-    +'<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:2px solid #d4e6da;padding-top:14px">'
-    +'<div style="font-size:11px;color:#6b8f78;line-height:1.8">'
+
+  // Descuentos
+  var totalDescuentos=descuentos.reduce(function(s,d){return s+d.monto;},0);
+  var filaDesc='';
+  descuentos.forEach(function(d){
+    filaDesc+='<tr style="border-bottom:1px solid #fdebd0">'
+      +'<td colspan="7" style="padding:5px 7px;color:#c0392b">— '+d.concepto+'</td>'
+      +'<td style="padding:5px 7px;text-align:right;color:#c0392b;font-weight:600">-'+pesos(d.monto)+'</td></tr>';
+  });
+
+  var totalBruto=r.total||0;
+  var totalFinal=totalManual!==null?totalManual:totalBruto-totalDescuentos;
+
+  var pad=formato===2?'20px 28px':'32px 40px';
+  var fSize=formato===2?'10px':'11px';
+  var titleSize=formato===2?'16px':'20px';
+  var empSize=formato===2?'13px':'16px';
+
+  return '<div style="padding:'+pad+';font-family:system-ui,sans-serif;font-size:'+fSize+';color:#1a2e22;border-bottom:'+(formato===2?'3px solid #4A7C59':'none')+'">'
+    // Header
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:'+(formato===2?'12px':'20px')+';padding-bottom:'+(formato===2?'10px':'14px')+';border-bottom:2px solid #4A7C59">'
+    +'<div style="display:flex;align-items:center;gap:10px">'
+    +'<img src="'+LOGO_DATA+'" style="height:'+(formato===2?'32px':'42px')+';width:auto" alt="logo">'
+    +'<div><div style="font-size:'+titleSize+';font-weight:800;color:#2B6B4E;letter-spacing:-.3px">'+empresa+'</div>'
+    +'<div style="color:#6b8f78;font-size:'+(formato===2?'9px':'11px')+';margin-top:1px">Liquidación de haberes — '+periodo+'</div></div></div>'
+    +'<div style="text-align:right;font-size:9px;color:#6b8f78">Emitido: '+new Date().toLocaleDateString('es-AR')+'</div></div>'
+    // Datos empleado
+    +'<div style="background:#f4f9f5;border-radius:8px;padding:'+(formato===2?'10px 14px':'14px 18px')+';margin-bottom:'+(formato===2?'12px':'18px')+';display:flex;gap:28px;flex-wrap:wrap">'
+    +'<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.4px">Empleado</div><div style="font-size:'+empSize+';font-weight:700;margin-top:2px">'+r.nombre+'</div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.4px">Sector</div><div style="font-size:12px;font-weight:600;margin-top:2px">'+r.sector+'</div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.4px">Días</div><div style="font-size:12px;font-weight:600;margin-top:2px">'+r.dias+'</div></div>'
+    +'<div><div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#6b8f78;letter-spacing:.4px">Hs totales</div><div style="font-size:12px;font-weight:600;margin-top:2px">'+(r.horas||0).toFixed(2)+'h</div></div>'
+    +'</div>'
+    // Tabla jornadas
+    +'<table style="width:100%;border-collapse:collapse;margin-bottom:'+(formato===2?'10px':'16px')+'">'
+    +'<thead><tr style="background:#2B6B4E;color:#fff">'
+    +'<th style="padding:6px 7px;text-align:left;font-size:9px">Fecha</th>'
+    +'<th style="padding:6px 7px;text-align:left;font-size:9px">Turno</th>'
+    +'<th style="padding:6px 7px;text-align:left;font-size:9px">Horario</th>'
+    +'<th style="padding:6px 7px;text-align:right;font-size:9px">Hs norm.</th>'
+    +'<th style="padding:6px 7px;text-align:right;font-size:9px">Hs extra</th>'
+    +'<th style="padding:6px 7px;text-align:right;font-size:9px">Hs doble</th>'
+    +'<th style="padding:6px 7px;text-align:right;font-size:9px">Mult.</th>'
+    +'<th style="padding:6px 7px;text-align:right;font-size:9px">Subtotal</th>'
+    +'</tr></thead><tbody>'+filas+filaDesc+'</tbody></table>'
+    // Footer totales + notas
+    +'<div style="display:flex;justify-content:space-between;align-items:flex-end;border-top:1.5px solid #d4e6da;padding-top:'+(formato===2?'8px':'12px')+'">'
+    +'<div style="font-size:9px;color:#6b8f78;line-height:1.9">'
     +'Tarifa diurna: '+pesos(tD)+'/h &nbsp;·&nbsp; Nocturna: '+pesos(tN)+'/h<br>'
-    +'Extra: +'+(ep*100).toFixed(0)+'% &nbsp;·&nbsp; Franquicia descanso: '+cfg('cfg_franquicia')+' min</div>'
-    +'<div style="text-align:right"><div style="font-size:11px;color:#6b8f78;margin-bottom:4px">Total a liquidar</div>'
-    +'<div style="font-size:30px;font-weight:800;color:#2B6B4E;letter-spacing:-.5px">'+pesos(r.total)+'</div></div></div>'
-    +'<div style="margin-top:44px;display:flex;gap:60px">'
-    +'<div style="width:180px"><div style="height:1px;background:#2B6B4E;margin-bottom:6px"></div><div style="font-size:10px;color:#6b8f78">Firma empleado / Aclaracion</div></div>'
-    +'<div style="width:180px"><div style="height:1px;background:#2B6B4E;margin-bottom:6px"></div><div style="font-size:10px;color:#6b8f78">Firma empleador / RRHH</div></div>'
-    +'</div></div>';
+    +'Extra: +'+(ep*100).toFixed(0)+'% &nbsp;·&nbsp; Franquicia: '+cfg('cfg_franquicia')+' min'
+    +(notas?'<br><em>'+notas+'</em>':'')+'</div>'
+    +'<div style="text-align:right">'
+    +(totalDescuentos>0?'<div style="font-size:9px;color:#c0392b;margin-bottom:2px">Descuentos: -'+pesos(totalDescuentos)+'</div>':'')
+    +'<div style="font-size:9px;color:#6b8f78;margin-bottom:2px">Total a liquidar</div>'
+    +'<div style="font-size:'+(formato===2?'22px':'28px')+';font-weight:800;color:#2B6B4E;letter-spacing:-.5px">'+pesos(totalFinal)+'</div>'
+    +'</div></div>'
+    // Firmas
+    +'<div style="margin-top:'+(formato===2?'14px':'28px')+';display:flex;gap:40px">'
+    +'<div style="width:160px"><div style="height:1px;background:#2B6B4E;margin-bottom:4px"></div><div style="font-size:9px;color:#6b8f78">Firma empleado</div></div>'
+    +'<div style="width:160px"><div style="height:1px;background:#2B6B4E;margin-bottom:4px"></div><div style="font-size:9px;color:#6b8f78">Firma empleador / RRHH</div></div>'
+    +'</div>'
+    +'</div>';
 }
 
-function generarPDF(){
+function buildRecibo(r,periodo,empresa){
+  return buildReciboHTML(r,periodo,empresa,r._descuentos||[],r._notas||'',r._totalManual||null,pdfFormato);
+}
+
+function generarPDF(modo){
   if(!datosGlobales)return;
-  var tipo=document.querySelector('input[name="pdf_tipo"]:checked').value;
   var periodo=document.getElementById('pdf_periodo').value||'Liquidacion';
   var empresa=cfg('cfg_empresa')||'VITAGRO';
-  var filtroE=document.getElementById('pdf_emp').value;
-  var lista=datosGlobales.resumen.filter(function(r){return!filtroE||r.nombre===filtroE;});
+  var empSel=document.getElementById('pdf_emp').value;
+  var descuentos=getDescuentos();
+  var notas=document.getElementById('pdf_notas').value;
+  var chkManual=document.getElementById('chkTotalManual').checked;
+  var totalManual=chkManual?parseFloat(document.getElementById('inputTotalManual').value)||null:null;
+
+  var lista=datosGlobales.resumen.filter(function(r){return!empSel||r.nombre===empSel;});
   if(!lista.length){alert('No hay empleados para generar.');return;}
+
   var prog=document.getElementById('pdfProg');prog.style.display='';
   var tpl=document.getElementById('pdfTpl');
 
-  function rC(html,cb){
+  function renderCanvas(html,cb){
     tpl.innerHTML=html;tpl.style.display='block';
-    setTimeout(function(){html2canvas(tpl,{scale:1.5,useCORS:true,logging:false}).then(function(c){tpl.style.display='none';cb(c);});},80);
+    tpl.style.width=pdfFormato===2?'794px':'794px';
+    setTimeout(function(){
+      html2canvas(tpl,{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'}).then(function(c){
+        tpl.style.display='none';cb(c);
+      });
+    },100);
   }
-  function c2pdf(canvas,fname){
-    var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'px',format:'a4'});
-    var pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();
-    var cw=canvas.width,ch=canvas.height,slH=Math.floor(cw*(ph/pw));
-    var pgs=Math.ceil(ch/slH);
-    for(var pg=0;pg<pgs;pg++){
+
+  function canvasToPDF(canvas,fname){
+    // A4 en px a 96dpi: 794x1123
+    var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+    var pW=pdf.internal.pageSize.getWidth();   // 595.28pt
+    var pH=pdf.internal.pageSize.getHeight();  // 841.89pt
+    var cW=canvas.width,cH=canvas.height;
+    var scale=pW/cW;
+    var pageH=pH/scale;  // altura de una página en pixels del canvas
+    var pages=Math.ceil(cH/pageH);
+    for(var pg=0;pg<pages;pg++){
       if(pg>0)pdf.addPage();
-      var sc=document.createElement('canvas');sc.width=cw;sc.height=Math.min(slH,ch-pg*slH);
-      sc.getContext('2d').drawImage(canvas,0,pg*slH,cw,sc.height,0,0,cw,sc.height);
-      pdf.addImage(sc.toDataURL('image/jpeg',.9),'JPEG',0,0,pw,sc.height*(pw/cw));
+      var sc=document.createElement('canvas');
+      sc.width=cW;
+      sc.height=Math.min(Math.ceil(pageH),cH-pg*Math.floor(pageH));
+      sc.getContext('2d').drawImage(canvas,0,pg*Math.floor(pageH),cW,sc.height,0,0,cW,sc.height);
+      var imgData=sc.toDataURL('image/jpeg',0.95);
+      pdf.addImage(imgData,'JPEG',0,0,pW,sc.height*scale);
     }
     pdf.save(fname);
   }
 
-  if(tipo==='global'||tipo==='ambos'){
-    prog.textContent='Generando PDF global...';
-    var allH='';lista.forEach(function(r){allH+=buildRecibo(r,periodo,empresa);});
-    rC(allH,function(c){
-      c2pdf(c,'vitagro_liquidacion_'+periodo.replace(/\s/g,'_')+'.pdf');
-      if(tipo==='ambos')hacerInd(lista,periodo,empresa,prog);
-      else{prog.style.display='none';cerrarModal('modalPDF');}
+  if(modo==='todos'){
+    prog.textContent='Generando PDF con todos los recibos...';
+    var allHtml='';
+    lista.forEach(function(r){
+      allHtml+=buildReciboHTML(r,periodo,empresa,descuentos,notas,totalManual,pdfFormato);
     });
-  }else hacerInd(lista,periodo,empresa,prog);
+    tpl.style.width='794px';
+    renderCanvas(allHtml,function(c){
+      canvasToPDF(c,'vitagro_liquidacion_'+periodo.replace(/\s/g,'_')+'.pdf');
+      prog.style.display='none';cerrarModal('modalPDF');
+    });
+  } else {
+    // Individual: descargar uno por uno
+    var idx=0;
+    function next(){
+      if(idx>=lista.length){prog.style.display='none';cerrarModal('modalPDF');return;}
+      var r=lista[idx++];
+      prog.textContent='Generando recibo de '+r.nombre+' ('+idx+'/'+lista.length+')...';
+      renderCanvas(buildReciboHTML(r,periodo,empresa,descuentos,notas,totalManual,pdfFormato),function(c){
+        canvasToPDF(c,'vitagro_recibo_'+r.nombre.replace(/\W/g,'_')+'_'+periodo.replace(/\s/g,'_')+'.pdf');
+        setTimeout(next,300);
+      });
+    }
+    next();
+  }
 }
 
-function hacerInd(lista,periodo,empresa,prog){
-  var idx=0;
-  function next(){
-    if(idx>=lista.length){prog.style.display='none';cerrarModal('modalPDF');return;}
-    var r=lista[idx++];prog.textContent='Recibo de '+r.nombre+' ('+idx+'/'+lista.length+')...';
-    var tpl=document.getElementById('pdfTpl');tpl.innerHTML=buildRecibo(r,periodo,empresa);tpl.style.display='block';
-    setTimeout(function(){
-      html2canvas(tpl,{scale:1.5,useCORS:true,logging:false}).then(function(c){
-        tpl.style.display='none';
-        var pdf=new jspdf.jsPDF({orientation:'portrait',unit:'px',format:'a4'});
-        var pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();
-        var cw=c.width,ch=c.height,slH=Math.floor(cw*(ph/pw));
-        for(var pg=0;pg<Math.ceil(ch/slH);pg++){
-          if(pg>0)pdf.addPage();
-          var sc=document.createElement('canvas');sc.width=cw;sc.height=Math.min(slH,ch-pg*slH);
-          sc.getContext('2d').drawImage(c,0,pg*slH,cw,sc.height,0,0,cw,sc.height);
-          pdf.addImage(sc.toDataURL('image/jpeg',.9),'JPEG',0,0,pw,sc.height*(pw/cw));
-        }
-        pdf.save('vitagro_recibo_'+r.nombre.replace(/\W/g,'_')+'_'+periodo.replace(/\s/g,'_')+'.pdf');
-        setTimeout(next,200);
-      });
-    },80);
+// ======== CALENDARIO DE TURNOS ========
+// turnosOverride: { "nombre|fecha": {tipo, inicio, fin, doble} }
+var turnosOverride = {};
+var calView = 'grilla';
+var DOW_ES = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+var TURNO_DEFAULTS = {
+  manana: {inicio:'06:00', fin:'14:00'},
+  tarde:  {inicio:'14:00', fin:'22:00'},
+  noche:  {inicio:'22:00', fin:'06:00'},
+  diurno: {inicio:'08:00', fin:'16:00'},
+  doble:  {inicio:'06:00', fin:'22:00'}
+};
+
+function getTurnoConOverride(nombre, fecha){
+  var key = nombre+'|'+fecha;
+  if(turnosOverride[key]){
+    var ov = turnosOverride[key];
+    return {tipo:ov.tipo, label:labelTurno(ov.tipo), inicio:ov.inicio, fin:ov.fin, doble:ov.doble||false, manual:true};
   }
-  next();
+  var auto = getTurno(nombre, fecha);
+  var def = TURNO_DEFAULTS[auto.tipo] || TURNO_DEFAULTS.diurno;
+  return {tipo:auto.tipo, label:auto.label, inicio:def.inicio, fin:def.fin, doble:false, manual:false};
+}
+
+function labelTurno(tipo){
+  return {manana:'Mañana',tarde:'Tarde',noche:'Noche',diurno:'Diurno',doble:'Doble'}[tipo]||tipo;
+}
+
+function setCalView(v){
+  calView = v;
+  document.getElementById('calBtnGrilla').classList.toggle('active', v==='grilla');
+  document.getElementById('calBtnEmp').classList.toggle('active', v==='empleado');
+  document.getElementById('calEmpSelector').style.display = v==='empleado'?'':'none';
+  renderCalendario();
+}
+
+function initCalendario(){
+  // Poblar selector de empleados
+  var sel = document.getElementById('calEmpSel');
+  sel.innerHTML = '';
+  var empleados = getEmpleadosCalendario();
+  empleados.forEach(function(e){
+    var o = document.createElement('option');
+    o.value = e; o.textContent = e; sel.appendChild(o);
+  });
+  renderCalendario();
+}
+
+function getEmpleadosCalendario(){
+  if(!datosGlobales) return [];
+  var sector = document.getElementById('calSectorFiltro').value;
+  var nombres = {};
+  datosGlobales.jornadas.forEach(function(j){ nombres[j.nombre]=j.sector; });
+  // Incluir tb empleados de descolgadas
+  if(datosGlobales.descolgadas) datosGlobales.descolgadas.forEach(function(d){ if(d.nombre)nombres[d.nombre]=getSector(d.nombre); });
+  return Object.keys(nombres).filter(function(n){
+    if(sector==='todos')return true;
+    return nombres[n]===sector;
+  }).sort();
+}
+
+function getFechasCalendario(){
+  if(!datosGlobales) return [];
+  var desde = document.getElementById('fechaDesde').value;
+  var hasta  = document.getElementById('fechaHasta').value;
+  if(!desde||!hasta) return [];
+  var fechas = [], cur = new Date(desde+'T12:00:00');
+  var end = new Date(hasta+'T12:00:00');
+  while(cur<=end){
+    fechas.push(toISO(cur));
+    cur.setDate(cur.getDate()+1);
+  }
+  return fechas;
+}
+
+function renderCalendario(){
+  var contenido = document.getElementById('calContenido');
+  if(!datosGlobales){ contenido.innerHTML='<div class="cal-sin-datos">Procesá un log primero para ver el calendario de turnos del período</div>'; return; }
+  if(calView==='grilla') renderCalGrilla(contenido);
+  else renderCalEmpleado(contenido);
+}
+
+function renderCalGrilla(contenido){
+  var fechas = getFechasCalendario();
+  var empleados = getEmpleadosCalendario();
+  if(!fechas.length||!empleados.length){ contenido.innerHTML='<div class="cal-sin-datos">Sin datos para mostrar. Verificá el filtro de sector.</div>'; return; }
+
+  var html = '<div class="cal-grid-wrap"><table class="cal-grid"><thead><tr>'
+    +'<th class="col-fecha">Fecha</th>';
+  empleados.forEach(function(e){ html+='<th>'+e+'</th>'; });
+  html+='</tr></thead><tbody>';
+
+  fechas.forEach(function(fecha){
+    var d = new Date(fecha+'T12:00:00');
+    var dow = d.getDay();
+    var tipo = getTipoDia(fecha);
+    var rowClass = tipo==='Feriado'?'dia-feriado':tipo==='Domingo'?'dia-domingo':tipo==='Sabado'?'dia-sabado':'';
+    var dowStr = DOW_ES[dow];
+    html+='<tr class="'+rowClass+'">'
+      +'<td class="col-fecha"><span style="color:var(--ink3);font-size:10px">'+dowStr+'</span> '+fmtF(fecha)
+      +(tipo!=='Normal'?'<br><span style="font-size:9px;color:'+(tipo==='Feriado'?'var(--red)':tipo==='Domingo'?'var(--orange)':'#827717')+'">'+tipo+'</span>':'')
+      +'</td>';
+    empleados.forEach(function(emp){
+      var t = getTurnoConOverride(emp, fecha);
+      var cls = t.doble?'t-doble':'t-'+t.tipo;
+      var isEdited = t.manual?'cell-edited':'cell-auto';
+      var key = emp+'|'+fecha;
+      html+='<td><div class="turno-cell '+isEdited+'" id="tc_'+key.replace(/[|\/\-]/g,'_')+'">'
+        +'<select class="turno-select '+cls+'" onchange="onTurnoChange(\''+emp+'\',\''+fecha+'\',this)" data-emp="'+emp+'" data-fecha="'+fecha+'">'
+        +'<option value="manana"'+(t.tipo==='manana'&&!t.doble?' selected':'')+'>☀ Mañana</option>'
+        +'<option value="tarde"'+(t.tipo==='tarde'&&!t.doble?' selected':'')+'>🌤 Tarde</option>'
+        +'<option value="noche"'+(t.tipo==='noche'&&!t.doble?' selected':'')+'>🌙 Noche</option>'
+        +'<option value="diurno"'+(t.tipo==='diurno'&&!t.doble?' selected':'')+'>🏢 Diurno</option>'
+        +'<option value="doble"'+(t.doble?' selected':'')+'>⚡ Doble</option>'
+        +'</select>'
+        +'<div class="horario-inputs">'
+        +'<input type="time" class="horario-input" value="'+t.inicio+'" onchange="onHorarioChange(\''+emp+'\',\''+fecha+'\',\'inicio\',this.value)" title="Entrada">'
+        +'<span class="horario-sep">→</span>'
+        +'<input type="time" class="horario-input" value="'+t.fin+'" onchange="onHorarioChange(\''+emp+'\',\''+fecha+'\',\'fin\',this.value)" title="Salida">'
+        +'</div>'
+        +'</div></td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody></table></div>';
+  contenido.innerHTML=html;
+}
+
+function renderCalEmpleado(contenido){
+  var fechas = getFechasCalendario();
+  var emp = document.getElementById('calEmpSel').value;
+  if(!emp||!fechas.length){ contenido.innerHTML='<div class="cal-sin-datos">Seleccioná un empleado.</div>'; return; }
+
+  var html = '<div class="emp-cal-grid">';
+  fechas.forEach(function(fecha){
+    var d = new Date(fecha+'T12:00:00');
+    var dow = d.getDay();
+    var tipo = getTipoDia(fecha);
+    var cardClass = tipo==='Feriado'?'feriado':tipo==='Domingo'?'domingo':tipo==='Sabado'?'sabado':'';
+    var t = getTurnoConOverride(emp, fecha);
+    var cls = t.doble?'t-doble':'t-'+t.tipo;
+    var isEdited = t.manual;
+
+    html+='<div class="emp-day-card '+cardClass+'"'+(isEdited?' style="border-color:var(--gj);box-shadow:0 0 0 2px rgba(74,124,89,.15)"':'')+'>'
+      +'<div class="emp-day-fecha">'
+      +'<span>'+DOW_ES[dow]+' '+fmtF(fecha)+'</span>'
+      +(tipo!=='Normal'?'<span style="font-size:9px;background:var(--red-bg);color:var(--red);padding:1px 6px;border-radius:10px">'+tipo+'</span>':'')
+      +(isEdited?'<span style="font-size:9px;background:var(--gj-light);color:var(--jb);padding:1px 6px;border-radius:10px">editado</span>':'')
+      +'</div>'
+      +'<select class="turno-select '+cls+'" style="width:100%;margin-bottom:6px" onchange="onTurnoChange(\''+emp+'\',\''+fecha+'\',this)">'
+      +'<option value="manana"'+(t.tipo==='manana'&&!t.doble?' selected':'')+'>☀ Mañana (06–14)</option>'
+      +'<option value="tarde"'+(t.tipo==='tarde'&&!t.doble?' selected':'')+'>🌤 Tarde (14–22)</option>'
+      +'<option value="noche"'+(t.tipo==='noche'&&!t.doble?' selected':'')+'>🌙 Noche (22–06)</option>'
+      +'<option value="diurno"'+(t.tipo==='diurno'&&!t.doble?' selected':'')+'>🏢 Diurno (08–16)</option>'
+      +'<option value="doble"'+(t.doble?' selected':'')+'>⚡ Turno doble</option>'
+      +'</select>'
+      +'<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3)">'
+      +'<span>Entrada:</span>'
+      +'<input type="time" class="horario-input" style="width:70px" value="'+t.inicio+'" onchange="onHorarioChange(\''+emp+'\',\''+fecha+'\',\'inicio\',this.value)">'
+      +'<span>Salida:</span>'
+      +'<input type="time" class="horario-input" style="width:70px" value="'+t.fin+'" onchange="onHorarioChange(\''+emp+'\',\''+fecha+'\',\'fin\',this.value)">'
+      +'</div>'
+      +'</div>';
+  });
+  html+='</div>';
+  contenido.innerHTML=html;
+}
+
+function onTurnoChange(emp, fecha, sel){
+  var tipo = sel.value;
+  var key = emp+'|'+fecha;
+  if(!turnosOverride[key]) turnosOverride[key]={tipo:'diurno',inicio:'08:00',fin:'16:00',doble:false};
+  var ov = turnosOverride[key];
+  if(tipo==='doble'){
+    ov.tipo='doble'; ov.doble=true; ov.inicio='06:00'; ov.fin='22:00';
+  } else {
+    ov.tipo=tipo; ov.doble=false;
+    var def=TURNO_DEFAULTS[tipo]||TURNO_DEFAULTS.diurno;
+    ov.inicio=def.inicio; ov.fin=def.fin;
+  }
+  // Actualizar clase visual del select
+  sel.className='turno-select t-'+(ov.doble?'doble':tipo);
+  // Actualizar inputs de horario en la misma celda
+  var inputs=sel.parentNode.querySelectorAll('.horario-input');
+  if(inputs[0])inputs[0].value=ov.inicio;
+  if(inputs[1])inputs[1].value=ov.fin;
+  marcarCambiosPendientes();
+}
+
+function onHorarioChange(emp, fecha, campo, valor){
+  var key=emp+'|'+fecha;
+  if(!turnosOverride[key]){
+    var auto=getTurno(emp,fecha);
+    var def=TURNO_DEFAULTS[auto.tipo]||TURNO_DEFAULTS.diurno;
+    turnosOverride[key]={tipo:auto.tipo,inicio:def.inicio,fin:def.fin,doble:false};
+  }
+  turnosOverride[key][campo]=valor;
+  marcarCambiosPendientes();
+}
+
+function marcarCambiosPendientes(){
+  document.getElementById('calChangedInd').classList.add('show');
+}
+
+function aplicarCambiosCalendario(){
+  if(!datosGlobales){alert('No hay datos procesados.');return;}
+  // Recalcular todas las jornadas usando los turnos con override
+  datosGlobales.jornadas.forEach(function(j){
+    var t=getTurnoConOverride(j.nombre, j.fecha);
+    // Recalcular pago con el turno correcto
+    var pagoNuevo=calcularPagoConTurno(j, t, j.fecha);
+    j.turno=pagoNuevo.turno;j.mult=pagoNuevo.mult;
+    j.total=pagoNuevo.total;j.desglose=pagoNuevo.desglose;
+    j.tipoDia=pagoNuevo.tipoDia;
+  });
+  recalcularResumen();
+  renderReportes();
+  document.getElementById('calChangedInd').classList.remove('show');
+  alert('✓ Turnos aplicados al reporte correctamente.\n\nPodés verificar los cambios en la sección Reporte.');
+}
+
+function calcularPagoConTurno(jornada, turno, fecha){
+  var tipoDia=getTipoDia(fecha);
+  var mult=1;
+  if(tipoDia==='Sabado'&&jornada.hsTrabajadas>4)mult=2;
+  if(tipoDia==='Domingo'||tipoDia==='Feriado')mult=2;
+  var tD=parseFloat(cfg('cfg_tarifa_diurna'))||4500;
+  var tN=parseFloat(cfg('cfg_tarifa_nocturna'))||5300;
+  var ep=(parseFloat(cfg('cfg_extra_pct'))||12)/100;
+  // Turno doble: cobrar 16h base independientemente (o lo que haya trabajado)
+  var tBase=turno.tipo==='noche'?tN:tD;
+  if(turno.doble){
+    // Turno doble: todas las horas a tarifa nocturna + diurna proporcional
+    tBase=(tD+tN)/2;
+  }
+  var hsN=jornada.hsTrabajadas-jornada.hsExtra;
+  var total=(hsN*tBase+jornada.hsExtra*tBase*(1+ep))*mult;
+  var esN=turno.tipo==='noche'||turno.doble;
+  return{total:total,turno:turno,tipoDia:tipoDia,mult:mult,
+    desglose:{normDiurna:(!esN&&mult===1)?hsN:0,normNocturna:(esN&&mult===1)?hsN:0,
+      extraDiurna:(!esN&&mult===1)?jornada.hsExtra:0,extraNocturna:(esN&&mult===1)?jornada.hsExtra:0,
+      hsSabado:(tipoDia==='Sabado'&&mult===2)?jornada.hsTrabajadas:0,
+      hsDomingo:(tipoDia==='Domingo')?jornada.hsTrabajadas:0,
+      hsFeriado:(tipoDia==='Feriado')?jornada.hsTrabajadas:0}};
+}
+
+function resetearCalendario(){
+  if(!confirm('Restablecer todos los turnos a la rotación automática? Se perderán los cambios manuales.'))return;
+  turnosOverride={};
+  document.getElementById('calChangedInd').classList.remove('show');
+  renderCalendario();
 }
 
 // ======== INIT ========
