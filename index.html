@@ -1041,6 +1041,10 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
         <div class="form-group"><label class="form-label">Tarifa nocturna ($/h)</label><input type="number" class="form-input" id="cfg_tarifa_nocturna" value="5300" min="0" oninput="saveConfig()"></div>
         <div class="form-group"><label class="form-label">Recargo horas extra (%)</label><input type="number" class="form-input" id="cfg_extra_pct" value="12" min="0" max="200" oninput="saveConfig()"></div>
         <div class="form-group"><label class="form-label">Franquicia descanso (min)</label><input type="number" class="form-input" id="cfg_franquicia" value="60" min="0" oninput="saveConfig()"></div>
+        <div class="form-group"><label class="form-label">Margen de redondeo entrada/salida (min)</label><input type="number" class="form-input" id="cfg_redondeo" value="20" min="0" max="30" oninput="saveConfig()"></div>
+      </div>
+      <div class="tip" style="margin-top:12px">
+        <strong>Redondeo de horarios:</strong> Si la entrada/salida real difiere del horario oficial del turno en <strong>≤ este margen</strong>, se ajusta automáticamente al horario oficial. Si la diferencia es mayor, se toma la hora real (llegada tarde / salida anticipada). Si el empleado entró dentro del margen y las horas resultantes son menores a las horas base, se garantizan las horas base completas. Máximo recomendado: 20 min.
       </div>
     </div>
   </div>
@@ -1235,7 +1239,7 @@ function loadConfig(){
     var s=localStorage.getItem(CFG_KEY);
     if(!s)return;
     var c=JSON.parse(s);
-    ['cfg_empresa','cfg_siglas','cfg_planta','cfg_comercial','cfg_modo','cfg_horas_base','cfg_lunes','cfg_s1','cfg_s2','cfg_s3','cfg_tarifa_diurna','cfg_tarifa_nocturna','cfg_extra_pct','cfg_franquicia','cfg_sin_franquicia','cfg_gscript'].forEach(function(id){
+    ['cfg_empresa','cfg_siglas','cfg_planta','cfg_comercial','cfg_modo','cfg_horas_base','cfg_lunes','cfg_s1','cfg_s2','cfg_s3','cfg_tarifa_diurna','cfg_tarifa_nocturna','cfg_extra_pct','cfg_franquicia','cfg_redondeo','cfg_sin_franquicia','cfg_gscript'].forEach(function(id){
       var el=document.getElementById(id);if(el&&c[id]!==undefined)el.value=c[id];
     });
     toggleRot();updateTopbar();
@@ -1243,7 +1247,7 @@ function loadConfig(){
 }
 function saveConfig(){
   var c={};
-  ['cfg_empresa','cfg_siglas','cfg_planta','cfg_comercial','cfg_modo','cfg_horas_base','cfg_lunes','cfg_s1','cfg_s2','cfg_s3','cfg_tarifa_diurna','cfg_tarifa_nocturna','cfg_extra_pct','cfg_franquicia','cfg_sin_franquicia','cfg_gscript'].forEach(function(id){
+  ['cfg_empresa','cfg_siglas','cfg_planta','cfg_comercial','cfg_modo','cfg_horas_base','cfg_lunes','cfg_s1','cfg_s2','cfg_s3','cfg_tarifa_diurna','cfg_tarifa_nocturna','cfg_extra_pct','cfg_franquicia','cfg_redondeo','cfg_sin_franquicia','cfg_gscript'].forEach(function(id){
     var el=document.getElementById(id);if(el)c[id]=el.value;
   });
   localStorage.setItem(CFG_KEY,JSON.stringify(c));
@@ -1435,6 +1439,79 @@ function getTipoDia(fecha){
 }
 function minEntre(a,b){return(b.getTime()-a.getTime())/60000;}
 
+// ======== REDONDEO DE HORARIOS ========
+// Convierte "HH:MM" a minutos desde medianoche
+function horaAMin(hhmm){
+  var p = hhmm.split(':');
+  return parseInt(p[0],10)*60 + parseInt(p[1],10);
+}
+
+// Diferencia en minutos entre hora real (Date) y hora oficial (string "HH:MM"),
+// considerando cruce de medianoche. Positivo = llegó tarde / salió antes.
+function diffMinutos(dtReal, horaOficial, esFin){
+  var minOficial = horaAMin(horaOficial);
+  var minReal    = dtReal.getHours()*60 + dtReal.getMinutes();
+  var diff       = minReal - minOficial;
+  // Para turnos noche: el fin (06:00) puede quedar el día siguiente
+  // Si esFin y diff << -200, el oficial es nocturno cruzando medianoche
+  if(esFin && diff < -200) diff += 1440;
+  if(!esFin && diff > 200) diff -= 1440; // inicio noche: 22:xx vs 06:xx
+  return diff; // negativo = llegó antes de lo esperado / salió después
+}
+
+// Aplica el redondeo a una Date, devuelve una Date ajustada (o la original)
+// y un flag indicando si se aplicó el redondeo de entrada.
+// modo: 'entrada' | 'salida'
+function aplicarRedondeoHorario(dtReal, horaOficial, modo){
+  var margen = parseInt(cfg('cfg_redondeo'),10) || 20;
+  margen = Math.min(margen, 30); // límite duro: nunca más de 30 min
+
+  var diff = diffMinutos(dtReal, horaOficial, modo === 'salida');
+  var ajustado = false;
+  var dtAjustada = dtReal;
+
+  if(modo === 'entrada'){
+    // diff > 0  → llegó tarde
+    // diff < 0  → llegó antes (no penaliza, se toma como on-time)
+    if(diff > 0 && diff <= margen){
+      // Dentro del margen: ajusta al horario oficial (no penaliza)
+      dtAjustada = new Date(dtReal);
+      dtAjustada.setHours(Math.floor(horaAMin(horaOficial)/60), horaAMin(horaOficial)%60, 0, 0);
+      ajustado = true;
+    } else if(diff < 0){
+      // Llegó antes: igual se ajusta al oficial (no bonus)
+      dtAjustada = new Date(dtReal);
+      dtAjustada.setHours(Math.floor(horaAMin(horaOficial)/60), horaAMin(horaOficial)%60, 0, 0);
+      ajustado = true;
+    }
+    // Si diff > margen: llegó tarde real, se toma la hora real
+  } else { // salida
+    // diff < 0  → salió antes del horario oficial
+    // diff > 0  → salió después (horas extra, no ajustar)
+    if(diff < 0 && Math.abs(diff) <= margen){
+      // Salió un poco antes: ajusta al horario oficial (cobra la jornada completa)
+      var minOf = horaAMin(horaOficial);
+      dtAjustada = new Date(dtReal);
+      dtAjustada.setHours(Math.floor(minOf/60), minOf%60, 0, 0);
+      // Si quedó antes de la hora real (cruce medianoche en noche), sumar un día
+      if(dtAjustada < dtReal - 60000) dtAjustada.setDate(dtAjustada.getDate()+1);
+      ajustado = true;
+    }
+    // Si salió antes por más del margen → se cobra lo real
+    // Si salió después → horas extra, se toma la hora real
+  }
+  return { dt: dtAjustada, ajustado: ajustado };
+}
+
+// Redondeo sin turno: al cuarto de hora más cercano
+function redondearAlCuarto(dt){
+  var min = dt.getHours()*60 + dt.getMinutes();
+  var redondeado = Math.round(min/15)*15;
+  var dt2 = new Date(dt);
+  dt2.setHours(Math.floor(redondeado/60), redondeado%60, 0, 0);
+  return dt2;
+}
+
 function tieneFranquicia(nombre){
   // Devuelve false si el empleado está en la lista cfg_sin_franquicia
   var lista = cfg('cfg_sin_franquicia') || '';
@@ -1467,9 +1544,58 @@ function procesarEmpleadoDia(marcaciones, nombre){
 }
 
 function calcularPago(jornada,nombre,fecha){
-  // Usa override manual si existe, si no la rotación automática
-  var turno=getTurnoConOverride(nombre,fecha);
-  return calcularPagoConTurno(jornada,turno,fecha);
+  var turno = getTurnoConOverride(nombre, fecha);
+  var jornadaFinal = jornada;
+
+  // Aplicar redondeo si está configurado
+  var margen = parseInt(cfg('cfg_redondeo'),10) || 20;
+  if(margen > 0 && jornada.entrada && jornada.salida){
+    var dtEntrada = new Date(jornada.entrada);
+    var dtSalida  = new Date(jornada.salida);
+    var entradaAjustada, salidaAjustada, entradaDentroMargen;
+
+    if(turno && turno.inicio){
+      // Con turno: comparar contra horario oficial
+      var resEnt = aplicarRedondeoHorario(dtEntrada, turno.inicio, 'entrada');
+      var resSal = aplicarRedondeoHorario(dtSalida,  turno.fin,   'salida');
+      entradaAjustada      = resEnt.dt;
+      salidaAjustada       = resSal.dt;
+      entradaDentroMargen  = resEnt.ajustado;
+    } else {
+      // Sin turno: redondear al cuarto de hora más cercano
+      entradaAjustada     = redondearAlCuarto(dtEntrada);
+      salidaAjustada      = redondearAlCuarto(dtSalida);
+      entradaDentroMargen = true;
+    }
+
+    // Recalcular horas con los tiempos ajustados
+    var hsBase    = parseFloat(cfg('cfg_horas_base')) || 8;
+    var franq     = parseFloat(cfg('cfg_franquicia'))  || 60;
+    var descDesc  = jornada.descDescMin || 0;
+    var hsTotAdj  = minEntre(entradaAjustada, salidaAjustada) / 60;
+    var hsTrabAdj = Math.max(0, hsTotAdj - descDesc / 60);
+
+    // Garantizar horas base si entró dentro del margen y el resultado es menor
+    if(entradaDentroMargen && hsTrabAdj < hsBase){
+      hsTrabAdj = hsBase;
+    }
+
+    var hsExtraAdj = Math.max(0, hsTrabAdj - hsBase);
+
+    // Clonar la jornada con los valores ajustados
+    jornadaFinal = {
+      entrada:      entradaAjustada,
+      salida:       salidaAjustada,
+      descansos:    jornada.descansos,
+      totalDescMin: jornada.totalDescMin,
+      descDescMin:  jornada.descDescMin,
+      hsTrabajadas: hsTrabAdj,
+      hsExtra:      hsExtraAdj,
+      _redondeoAplicado: entradaDentroMargen
+    };
+  }
+
+  return calcularPagoConTurno(jornadaFinal, turno, fecha);
 }
 
 // ======== PROCESAR ========
@@ -1570,12 +1696,13 @@ function generarReporte(agrupado,saltadas,desde,hasta){
     }
 
     var pago=calcularPago(j,v.nombre,v.fecha);
+    // pago puede contener una jornada ajustada por redondeo — usar esos valores en el reporte
+    var jEfectiva = pago._jornadaAjustada || j;
     jornadas.push({enNo:v.enNo,nombre:v.nombre,sector:getSector(v.nombre),fecha:v.fecha,
-      entrada:j.entrada,salida:j.salida,descansos:j.descansos,
-      totalDescMin:j.totalDescMin,descDescMin:j.descDescMin,
-      hsTrabajadas:j.hsTrabajadas,hsExtra:j.hsExtra,
+      entrada:jEfectiva.entrada,salida:jEfectiva.salida,descansos:jEfectiva.descansos,
+      totalDescMin:jEfectiva.totalDescMin,descDescMin:jEfectiva.descDescMin,
+      hsTrabajadas:jEfectiva.hsTrabajadas,hsExtra:jEfectiva.hsExtra,
       total:pago.total,turno:pago.turno,tipoDia:pago.tipoDia,mult:pago.mult,desglose:pago.desglose,
-      // Ediciones manuales del PDF
       _descuentos:[],_notas:'',_totalManual:null});
     j.descansos.forEach(function(d){todosDescansos.push({nombre:v.nombre,fecha:v.fecha,salida:d.salida,regreso:d.regreso,duracion:d.duracion,sinRegreso:d.sinRegreso});});
   });
@@ -2816,6 +2943,7 @@ function calcularPagoConTurno(jornada, turno, fecha){
   var total=(hsN*tBase+jornada.hsExtra*tBase*(1+ep))*mult;
   var esN=turno.tipo==='noche'||turno.doble;
   return{total:total,turno:turno,tipoDia:tipoDia,mult:mult,
+    _jornadaAjustada: jornada._redondeoAplicado ? jornada : null,
     desglose:{normDiurna:(!esN&&mult===1)?hsN:0,normNocturna:(esN&&mult===1)?hsN:0,
       extraDiurna:(!esN&&mult===1)?jornada.hsExtra:0,extraNocturna:(esN&&mult===1)?jornada.hsExtra:0,
       hsSabado:(tipoDia==='Sabado'&&mult===2)?jornada.hsTrabajadas:0,
