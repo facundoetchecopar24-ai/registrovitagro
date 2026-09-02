@@ -1861,7 +1861,8 @@ function renderReportes(){
       var esN2=j.turno&&j.turno.tipo==='noche';
       var tBase2=esN2?tN:tD;var tExt2=tBase2*(1+ep);var hsN2=j.hsTrabajadas-j.hsExtra;
       var hsDbl=(j.desglose.hsSabado||0)+(j.desglose.hsDomingo||0)+(j.desglose.hsFeriado||0);
-      var jIdx=datosGlobales.jornadas.indexOf(j);
+      // Buscar por nombre+fecha en lugar de indexOf (más robusto tras recalcularResumen)
+      var jIdx=datosGlobales.jornadas.findIndex(function(jj){return jj.nombre===j.nombre&&jj.fecha===j.fecha;});
       inner+='<tr>'
         +'<td>'+fmtF(j.fecha)+'</td><td>'+fmtH(j.entrada)+'</td><td>'+fmtH(j.salida)+'</td>'
         +'<td>'+bTurno(j.turno)+'</td><td>'+bDia(j.tipoDia,j.mult)+'</td>'
@@ -2963,6 +2964,7 @@ var _ejIdx = null;       // índice en datosGlobales.jornadas
 var _ejMarcs = [];       // copia editable de marcaciones [{dt, hora}]
 
 function abrirEditorJornada(jIdx){
+  if(jIdx < 0 || jIdx === undefined){ alert('No se pudo identificar la jornada. Intentá reprocesar el log.'); return; }
   var j = datosGlobales.jornadas[jIdx];
   if(!j){ alert('Jornada no encontrada.'); return; }
   _ejIdx = jIdx;
