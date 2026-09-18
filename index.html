@@ -579,7 +579,43 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
 .ej-preview-val{font-size:16px;font-weight:800;color:var(--ink);font-family:inherit}
 .ej-preview-lbl{font-size:10px;color:var(--ink3);margin-top:2px}
 
-/* ── HISTORIAL PENDIENTES ── */
+/* ── HISTORIAL ANUAL ── */
+.ha-year-block{margin-bottom:28px}
+.ha-year-header{display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(135deg,var(--g2) 0%,var(--g3) 100%);border-radius:var(--rl);cursor:pointer;color:#fff;margin-bottom:10px;user-select:none}
+.ha-year-title{font-size:16px;font-weight:800;letter-spacing:-.2px;flex:1}
+.ha-year-badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:3px 12px;font-size:11px;font-weight:700}
+.ha-year-chevron{transition:transform .2s;font-size:14px;opacity:.7}
+.ha-year-block.open .ha-year-chevron{transform:rotate(90deg)}
+.ha-months{display:none;flex-direction:column;gap:10px}
+.ha-year-block.open .ha-months{display:flex}
+.ha-month-card{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh1)}
+.ha-month-header{display:flex;align-items:center;gap:12px;padding:12px 18px;cursor:pointer;border-bottom:1px solid transparent;transition:background .15s}
+.ha-month-header:hover{background:var(--g10)}
+.ha-month-header.open-m{border-bottom-color:var(--border2)}
+.ha-month-name{font-size:14px;font-weight:700;color:var(--ink);flex:1}
+.ha-month-meta{display:flex;gap:16px;align-items:center}
+.ha-month-stat{text-align:right}
+.ha-month-stat-val{font-size:13px;font-weight:700;color:var(--ink)}
+.ha-month-stat-lbl{font-size:10px;color:var(--ink4);text-transform:uppercase;letter-spacing:.4px}
+.ha-month-total{font-size:16px;font-weight:800;color:var(--g3)}
+.ha-month-chevron{color:var(--ink4);font-size:12px;transition:transform .2s;margin-left:8px}
+.ha-month-header.open-m .ha-month-chevron{transform:rotate(90deg)}
+.ha-month-detail{display:none;padding:14px 18px}
+.ha-month-header.open-m + .ha-month-detail{display:block}
+.ha-actions{display:flex;gap:6px;margin-left:8px}
+.ha-del-btn{width:26px;height:26px;border:none;background:none;cursor:pointer;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--ink4);transition:all .15s;flex-shrink:0}
+.ha-del-btn:hover{background:var(--red-bg);color:var(--red)}
+.ha-empty{text-align:center;padding:56px 24px;color:var(--ink4)}
+.ha-validated-badge{display:inline-flex;align-items:center;gap:4px;background:#e5f3e8;color:#1e5c28;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+
+/* ── MODAL VALIDAR ── */
+.modal-validar{width:440px;max-width:96vw}
+.validar-preview{background:var(--g10);border:1.5px solid var(--g8);border-radius:var(--r);padding:14px 16px;margin:14px 0}
+.validar-preview-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g4);margin-bottom:10px}
+.validar-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.validar-stat{text-align:center}
+.validar-stat-val{font-size:18px;font-weight:800;color:var(--ink)}
+.validar-stat-lbl{font-size:10px;color:var(--ink3);margin-top:2px}
 .hist-summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
 .hist-stat{background:var(--card);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;box-shadow:var(--sh1);border-top:3px solid var(--orange)}
 .hist-stat.red{border-top-color:var(--red)}
@@ -626,7 +662,32 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
 .marc-preview-val{font-size:15px;font-weight:800;color:var(--ink);font-family:'Plus Jakarta Sans',sans-serif}
 .marc-preview-lbl{font-size:10px;color:var(--ink3);margin-top:2px}
 .btn-marcar-revisar{background:var(--orange-bg);color:var(--orange);border:1.5px solid #f5c89a;font-size:12px;padding:5px 12px}
-.btn-marcar-revisar:hover{background:#fde8d0}</style>
+.btn-marcar-revisar:hover{background:#fde8d0}
+
+/* ── PERÍODO EN CURSO ── */
+.pc-hero{background:linear-gradient(135deg,var(--g2) 0%,var(--g3) 60%,var(--g5) 100%);border-radius:var(--rl);padding:24px 28px;color:#fff;margin-bottom:20px;position:relative;overflow:hidden}
+.pc-hero::after{content:'';position:absolute;right:-40px;bottom:-40px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.05);pointer-events:none}
+.pc-hero-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.55);margin-bottom:6px}
+.pc-hero-nombre{font-size:24px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.pc-hero-sub{font-size:12px;color:rgba(255,255,255,.6)}
+.pc-progress-wrap{margin-top:16px}
+.pc-progress-label{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.7);margin-bottom:6px;font-weight:600}
+.pc-progress-bar{height:6px;background:rgba(255,255,255,.15);border-radius:4px;overflow:hidden}
+.pc-progress-fill{height:100%;background:linear-gradient(90deg,#7ec299,#b2ddc4);border-radius:4px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.pc-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:16px}
+.pc-stat{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);padding:10px 14px}
+.pc-stat-val{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.3px;line-height:1}
+.pc-stat-lbl{font-size:10px;color:rgba(255,255,255,.55);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+.pc-auditoria-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.pc-auditoria-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:11px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh1)}
+.pc-aud-dot{width:8px;height:8px;border-radius:50%;background:var(--g5);flex-shrink:0}
+.pc-aud-fecha{font-size:11px;font-weight:700;color:var(--ink);white-space:nowrap}
+.pc-aud-rango{font-size:11px;color:var(--ink3)}
+.pc-aud-marc{margin-left:auto;font-size:11px;font-weight:700;color:var(--g4);white-space:nowrap}
+.pc-aud-del{width:22px;height:22px;border:none;background:none;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;color:var(--ink4);transition:all .15s;flex-shrink:0}
+.pc-aud-del:hover{background:var(--red-bg);color:var(--red)}
+.pc-complete-alert{background:linear-gradient(135deg,#e5f3e8,#d4ecda);border:1.5px solid var(--g8);border-radius:var(--r);padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.pc-sync-row{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:11px;color:var(--ink4)}</style>
 </head>
 <body>
 
@@ -646,9 +707,14 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
 <div class="layout">
 <nav class="nav">
   <div class="nav-section">Principal</div>
-  <button class="nav-item active" id="nav-import" onclick="goPanel('panelImport',this)">
+  <button class="nav-item active" id="nav-periodo" onclick="goPanel('panelPeriodo',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z"/><path d="M12 6v6l4 2"/></svg>
+    <span>Período en curso</span>
+    <span class="nav-badge" id="badgePeriodo" style="display:none;background:var(--g5)">0</span>
+  </button>
+  <button class="nav-item" id="nav-import" onclick="abrirNuevaAuditoria()">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-    <span>Importar log</span>
+    <span>Nueva auditoría</span>
   </button>
   <button class="nav-item" id="nav-reporte" onclick="goPanel('panelReporte',this)" style="opacity:.45;pointer-events:none">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
@@ -669,6 +735,10 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
   </button>
   <div class="nav-divider"></div>
   <div class="nav-section">Sistema</div>
+  <button class="nav-item" id="nav-historial-anual" onclick="goPanel('panelHistorialAnual',this)">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+    <span>Historial anual</span>
+  </button>
   <button class="nav-item" id="nav-config" onclick="goPanel('panelConfig',this)">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 0-14.14 0M4.93 19.07a10 10 0 0 0 14.14 0"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2"/></svg>
     <span>Configuracion</span>
@@ -677,8 +747,75 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
 
 <div class="main">
 
+<!-- PANEL PERÍODO EN CURSO -->
+<div class="panel active" id="panelPeriodo">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Período en curso</div>
+      <div class="page-sub">Acumulá auditorías semana a semana. El sistema suma las marcaciones nuevas sin pisar las anteriores.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-sm" onclick="abrirNuevaAuditoria()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Nueva auditoría
+      </button>
+      <button class="btn btn-sm" onclick="cerrarMesManual()" style="border-color:var(--g4);color:var(--g4)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Cerrar y validar mes
+      </button>
+    </div>
+  </div>
+  <div id="pcCompleteAlert" style="display:none" class="pc-complete-alert">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g4)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:var(--g2)">El mes parece completo</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:2px">Todos los días hábiles del período están cargados. ¿Querés cerrarlo y validarlo?</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="cerrarMesManual()">Cerrar mes</button>
+  </div>
+  <div id="pcHero"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Auditorías realizadas
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="pcAuditorias"></div>
+        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:4px" onclick="abrirNuevaAuditoria()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva auditoría
+        </button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Sincronización
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="pcSyncStatus" style="font-size:12px;color:var(--ink3)">Sin configurar</div>
+        <div class="pc-sync-row">
+          <button class="btn btn-sm btn-outline" style="margin-top:8px" onclick="sincronizarPeriodoConSheets()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Sincronizar ahora
+          </button>
+          <button class="btn btn-sm" onclick="cargarPeriodoDesdeSheets(true)" style="margin-top:8px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Bajar de Sheets
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- PANEL IMPORTAR -->
-<div class="panel active" id="panelImport">
+<div class="panel" id="panelImport">
   <div class="page-header">
     <div class="page-title">Importar log de asistencia</div>
     <div class="page-sub">Subí el archivo .TXT exportado del reloj ProSoft PC4</div>
@@ -795,6 +932,10 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
       <button class="btn btn-primary btn-sm" onclick="abrirModalPDF()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Generar PDF
+      </button>
+      <button class="btn btn-sm" onclick="abrirModalValidar()" style="background:var(--jb);color:#fff;border-color:var(--jb)" title="Guardar este período en el historial anual">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Validar período
       </button>
     </div>
   </div>
@@ -967,6 +1108,81 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
     <table><thead><tr>
       <th>Empleado</th><th>Sector</th><th>Fecha</th><th>Tipo</th><th>Marcaciones</th><th>Estado</th><th>Procesado</th>
     </tr></thead><tbody id="body_historial"></tbody></table>
+  </div>
+</div>
+
+<!-- PANEL HISTORIAL ANUAL -->
+<div class="panel" id="panelHistorialAnual">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px">
+    <div class="page-header" style="margin-bottom:0">
+      <div class="page-title">Historial anual</div>
+      <div class="page-sub">Registro de todos los períodos liquidados. Expandí un mes para ver el detalle por empleado.</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-sm" onclick="exportarHistorialCSV()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Exportar CSV
+      </button>
+      <button class="btn btn-outline btn-sm" onclick="cargarHistorialDesdeSheets(true)" id="btnSyncHistorial" title="Sincronizar con Google Sheets">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        Sincronizar
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="limpiarHistorialAnual()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+        Limpiar todo
+      </button>
+    </div>
+  </div>
+  <div id="haSyncBar" style="display:none;margin-bottom:16px;padding:10px 14px;border-radius:var(--r);font-size:12px;font-weight:500;display:none;align-items:center;gap:10px"></div>
+  <div id="haContent"></div>
+</div>
+
+<!-- MODAL NUEVO PERÍODO -->
+<div class="modal-overlay" id="modalNuevoPeriodo">
+  <div class="modal" style="width:420px;max-width:96vw">
+    <div class="modal-title">Iniciar nuevo período</div>
+    <div class="modal-sub">Nombrá el mes que vas a auditar. Podrás agregar auditorías semana a semana.</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Nombre del período</label>
+      <input type="text" class="form-input" id="npNombre" placeholder="Ej: Julio 2025">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Mes (para calcular progreso)</label>
+      <input type="month" class="form-input" id="npMes">
+      <div class="form-hint" style="margin-top:5px">Se usa para saber cuántos días hábiles tiene el mes y mostrar el progreso de carga.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="document.getElementById('modalNuevoPeriodo').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarNuevoPeriodo()">Crear período e importar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VALIDAR PERÍODO -->
+<div class="modal-overlay" id="modalValidar">
+  <div class="modal modal-validar">
+    <div class="modal-title">Validar y guardar período</div>
+    <div class="modal-sub">Guardá el resumen del período actual en el historial anual.</div>
+    <div class="form-group" style="margin-bottom:14px">
+      <label class="form-label">Nombre del período</label>
+      <input type="text" class="form-input" id="validarPeriodoNombre" placeholder="Ej: Julio 2025">
+      <div class="form-hint" style="margin-top:5px">Se usará como identificador en el historial. Recomendado: Mes Año.</div>
+    </div>
+    <div class="validar-preview">
+      <div class="validar-preview-title">Resumen a guardar</div>
+      <div class="validar-stat-grid" id="validarPreviewGrid"></div>
+    </div>
+    <div class="alert alert-warn" id="validarDupeWarn" style="display:none">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      Ya existe un período con ese nombre. Guardarlo lo sobreescribirá.
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="cerrarModalValidar()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarValidar()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+        Guardar en historial
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1232,6 +1448,20 @@ var avMap={};
 
 // ======== CONFIG localStorage ========
 var CFG_KEY='vitagro_cfg_v4', HIST_KEY='vitagro_hist_v4';
+var PA_KEY = 'vitagro_periodo_activo_v1'; // período en curso
+
+// ── Período activo helpers ───────────────────────────────────
+function getPeriodoActivo(){
+  try{ return JSON.parse(localStorage.getItem(PA_KEY)||'null'); }
+  catch(e){ return null; }
+}
+function savePeriodoActivo(pa){
+  if(pa) localStorage.setItem(PA_KEY, JSON.stringify(pa));
+  else    localStorage.removeItem(PA_KEY);
+}
+function clearPeriodoActivo(){
+  localStorage.removeItem(PA_KEY);
+}
 function cfg(id){var el=document.getElementById(id);return el?el.value:'';}
 
 function loadConfig(){
@@ -1720,7 +1950,49 @@ function generarReporte(agrupado,saltadas,desde,hasta){
     r.jornadas.push(j);
   });
 
-  datosGlobales={jornadas:jornadas,descansos:todosDescansos,resumen:Object.values(resumen),descolgadas:descolgadas};
+  datosGlobales={jornadas:jornadas,descansos:todosDescansos,resumen:Object.values(resumen),descolgadas:descolgadas,_desde:desde,_hasta:hasta};
+
+  // ── Acumular en el período activo ──────────────────────────
+  var pa = getPeriodoActivo();
+  if(pa){
+    // Merge jornadas: reemplazar si ya existe (nombre+fecha), agregar si no
+    (jornadas).forEach(function(jNueva){
+      var idx = pa.jornadas.findIndex(function(j){ return j.nombre===jNueva.nombre && j.fecha===jNueva.fecha; });
+      if(idx>=0) pa.jornadas[idx]=jNueva;
+      else        pa.jornadas.push(jNueva);
+    });
+    // Merge descansos igual
+    (todosDescansos).forEach(function(dNuevo){
+      var idx = (pa.descansos||[]).findIndex(function(d){ return d.nombre===dNuevo.nombre && d.fecha===dNuevo.fecha && String(d.salida)===String(dNuevo.salida); });
+      if(idx<0)(pa.descansos=pa.descansos||[]).push(dNuevo);
+    });
+    // Merge descolgadas
+    (descolgadas).forEach(function(desc){
+      var idx=(pa.descolgadas||[]).findIndex(function(d){return d.nombre===desc.nombre&&d.fecha===desc.fecha;});
+      if(idx<0)(pa.descolgadas=pa.descolgadas||[]).push(desc);
+    });
+    // Reconstruir resumen completo
+    pa.resumen = reconstruirResumenDesdejornadas(pa.jornadas);
+    // Registrar auditoría
+    pa.auditorias = pa.auditorias||[];
+    pa.auditorias.push({
+      fechaImport: new Date().toLocaleDateString('es-AR'),
+      desde: desde, hasta: hasta,
+      marcaciones: jornadas.length + saltadas
+    });
+    pa.ultimaSync = null; // marcar como pendiente de sync
+    savePeriodoActivo(pa);
+    // Actualizar datosGlobales con el acumulado completo
+    datosGlobales.jornadas   = pa.jornadas;
+    datosGlobales.descansos  = pa.descansos;
+    datosGlobales.resumen    = pa.resumen;
+    datosGlobales.descolgadas= pa.descolgadas;
+    datosGlobales._desde     = pa.mes ? pa.mes+'-01' : desde;
+    datosGlobales._hasta     = pa.mes ? pa.mes+'-31' : hasta;
+    renderPeriodoActivo();
+    // Auto-sync en background
+    sincronizarPeriodoConSheets();
+  }
 
   var periodoStr=fmtF(desde)+' al '+fmtF(hasta);
   document.getElementById('reportePeriodo').textContent=periodoStr+(saltadas>0?' · '+saltadas+' duplicadas omitidas':'');
@@ -1790,6 +2062,8 @@ function goPanel(id,el){
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
   document.getElementById(id).classList.add('active');
   el.classList.add('active');
+  // Auto-sincronizar con Sheets al abrir el historial anual
+  if(id === 'panelHistorialAnual') cargarHistorialDesdeSheets(false);
 }
 function cerrarModal(id){document.getElementById(id).classList.remove('open');}
 function switchTab(n,el){
@@ -2293,6 +2567,16 @@ function recalcularResumen(){
     r.jornadas.push(j);
   });
   datosGlobales.resumen=Object.values(resumen);
+  // Persistir en período activo si existe
+  var paCur = getPeriodoActivo();
+  if(paCur && datosGlobales.jornadas){
+    paCur.jornadas  = datosGlobales.jornadas;
+    paCur.descansos = datosGlobales.descansos||[];
+    paCur.resumen   = Object.values(resumen);
+    paCur.descolgadas = datosGlobales.descolgadas||[];
+    paCur.ultimaSync  = null;
+    savePeriodoActivo(paCur);
+  }
   var totHs=datosGlobales.jornadas.reduce(function(s,j){return s+j.hsTrabajadas;},0);
   var totEx=datosGlobales.jornadas.reduce(function(s,j){return s+j.hsExtra;},0);
   var totP=datosGlobales.jornadas.reduce(function(s,j){return s+j.total;},0);
@@ -3152,6 +3436,765 @@ function guardarEdicionJornada(){
   setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 2800);
 }
 
+// ======== HISTORIAL ANUAL ========
+var HA_KEY = 'vitagro_historial_anual_v1';
+
+function getHistorialAnual(){
+  try{ return JSON.parse(localStorage.getItem(HA_KEY)||'[]'); }
+  catch(e){ return []; }
+}
+function saveHistorialAnual(arr){
+  localStorage.setItem(HA_KEY, JSON.stringify(arr));
+}
+
+function abrirModalValidar(){
+  if(!datosGlobales || !datosGlobales.resumen || !datosGlobales.resumen.length){
+    alert('No hay datos procesados para guardar. Importá y procesá un log primero.');
+    return;
+  }
+  // Pre-rellenar nombre con el período del reporte
+  var periodoEl = document.getElementById('reportePeriodo');
+  var periodoTxt = periodoEl ? periodoEl.textContent.replace(/·.*$/,'').trim() : '';
+  // Intentar extraer "Mes AAAA" del período
+  var meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  var mesNombre = '';
+  if(datosGlobales._desde){
+    var p = datosGlobales._desde.split('-');
+    if(p.length>=2){
+      var m = parseInt(p[1],10)-1;
+      mesNombre = meses[m].charAt(0).toUpperCase()+meses[m].slice(1)+' '+p[0];
+    }
+  }
+  document.getElementById('validarPeriodoNombre').value = mesNombre || periodoTxt || '';
+
+  // Construir preview
+  var res = datosGlobales.resumen;
+  var totalEmp = res.length;
+  var totalHs  = res.reduce(function(s,r){ return s+r.horas; }, 0);
+  var totalEx  = res.reduce(function(s,r){ return s+r.extra; }, 0);
+  var totalPesos = res.reduce(function(s,r){ return s+r.total; }, 0);
+  var totalDias  = res.reduce(function(s,r){ return s+r.dias; }, 0);
+
+  document.getElementById('validarPreviewGrid').innerHTML =
+    '<div class="validar-stat"><div class="validar-stat-val">'+totalEmp+'</div><div class="validar-stat-lbl">Empleados</div></div>'
+   +'<div class="validar-stat"><div class="validar-stat-val">'+totalDias+'</div><div class="validar-stat-lbl">Jornadas</div></div>'
+   +'<div class="validar-stat"><div class="validar-stat-val">'+totalHs.toFixed(1)+'h</div><div class="validar-stat-lbl">Hs trabajadas</div></div>'
+   +'<div class="validar-stat"><div class="validar-stat-val">'+totalEx.toFixed(1)+'h</div><div class="validar-stat-lbl">Hs extra</div></div>'
+   +'<div class="validar-stat"><div class="validar-stat-val" style="color:var(--g3)">$'+Math.round(totalPesos).toLocaleString('es-AR')+'</div><div class="validar-stat-lbl">Total liquidado</div></div>'
+   +'<div class="validar-stat"><div class="validar-stat-val">'+new Date().toLocaleDateString('es-AR')+'</div><div class="validar-stat-lbl">Fecha guardado</div></div>';
+
+  document.getElementById('validarDupeWarn').style.display = 'none';
+  document.getElementById('modalValidar').classList.add('open');
+
+  // Check duplicado al escribir
+  document.getElementById('validarPeriodoNombre').oninput = function(){
+    var nombre = this.value.trim();
+    var hist = getHistorialAnual();
+    var existe = hist.some(function(p){ return p.nombre === nombre; });
+    document.getElementById('validarDupeWarn').style.display = existe ? '' : 'none';
+  };
+}
+
+function cerrarModalValidar(){
+  document.getElementById('modalValidar').classList.remove('open');
+}
+
+function confirmarValidar(){
+  var nombre = document.getElementById('validarPeriodoNombre').value.trim();
+  if(!nombre){ alert('Ingresá un nombre para el período.'); return; }
+
+  var res = datosGlobales.resumen;
+  var desde = datosGlobales._desde || '';
+  var hasta  = datosGlobales._hasta  || '';
+
+  // Extraer año del período
+  var anio = '';
+  if(desde) anio = desde.split('-')[0];
+  else {
+    var m = nombre.match(/\d{4}/);
+    if(m) anio = m[0];
+  }
+
+  var registro = {
+    nombre:    nombre,
+    anio:      anio || String(new Date().getFullYear()),
+    desde:     desde,
+    hasta:     hasta,
+    guardado:  new Date().toISOString(),
+    totales: {
+      empleados:  res.length,
+      dias:       res.reduce(function(s,r){ return s+r.dias; }, 0),
+      horas:      parseFloat(res.reduce(function(s,r){ return s+r.horas; }, 0).toFixed(2)),
+      extra:      parseFloat(res.reduce(function(s,r){ return s+r.extra; }, 0).toFixed(2)),
+      total:      Math.round(res.reduce(function(s,r){ return s+r.total; }, 0))
+    },
+    empleados: res.map(function(r){
+      return {
+        nombre:   r.nombre,
+        sector:   r.sector,
+        dias:     r.dias,
+        horas:    parseFloat(r.horas.toFixed(2)),
+        extra:    parseFloat(r.extra.toFixed(2)),
+        dobles:   r.dobles||0,
+        normDiurna:   parseFloat((r.normDiurna||0).toFixed(2)),
+        normNocturna: parseFloat((r.normNocturna||0).toFixed(2)),
+        extraDiurna:  parseFloat((r.extraDiurna||0).toFixed(2)),
+        extraNocturna:parseFloat((r.extraNocturna||0).toFixed(2)),
+        hsSabado:     parseFloat((r.hsSabado||0).toFixed(2)),
+        hsDomingo:    parseFloat((r.hsDomingo||0).toFixed(2)),
+        hsFeriado:    parseFloat((r.hsFeriado||0).toFixed(2)),
+        total:    Math.round(r.total)
+      };
+    })
+  };
+
+  var hist = getHistorialAnual();
+  var idx  = hist.findIndex(function(p){ return p.nombre === nombre; });
+  if(idx >= 0) hist[idx] = registro;
+  else hist.push(registro);
+  hist.sort(function(a,b){ return b.guardado.localeCompare(a.guardado); });
+  saveHistorialAnual(hist);
+
+  cerrarModalValidar();
+  renderHistorialAnual();
+  // Limpiar período activo — mes cerrado y guardado en historial
+  clearPeriodoActivo();
+  renderPeriodoActivo();
+  goPanel('panelPeriodo', document.getElementById('nav-periodo'));
+
+  // Sincronizar con Sheets en background
+  enviarHistorialASheets(registro);
+
+  // Toast
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--g3);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:8px;transition:opacity .4s';
+  t.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg> Período "'+nombre+'" guardado en el historial';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 3000);
+}
+
+function eliminarPeriodoHistorial(nombre){
+  if(!confirm('Eliminar el período "'+nombre+'" del historial? Esta acción no se puede deshacer.')) return;
+  var hist = getHistorialAnual().filter(function(p){ return p.nombre !== nombre; });
+  saveHistorialAnual(hist);
+  renderHistorialAnual();
+}
+
+function limpiarHistorialAnual(){
+  if(!confirm('Eliminar TODOS los períodos del historial anual? Esta acción no se puede deshacer.')) return;
+  saveHistorialAnual([]);
+  renderHistorialAnual();
+}
+
+function renderHistorialAnual(){
+  var cont = document.getElementById('haContent');
+  if(!cont) return;
+  var hist = getHistorialAnual();
+
+  if(!hist.length){
+    cont.innerHTML = '<div class="ha-empty">'
+      +'<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--g8)" stroke-width="1.2" style="margin:0 auto 14px;display:block"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'
+      +'<div style="font-size:15px;font-weight:700;color:var(--ink3);margin-bottom:6px">Sin períodos guardados</div>'
+      +'<div style="font-size:13px;color:var(--ink4)">Procesá un log, revisá el reporte y usá el botón <strong>Validar período</strong> para guardar el resumen aquí.</div>'
+      +'</div>';
+    return;
+  }
+
+  // Agrupar por año
+  var porAnio = {};
+  hist.forEach(function(p){
+    var a = p.anio || '—';
+    if(!porAnio[a]) porAnio[a] = [];
+    porAnio[a].push(p);
+  });
+
+  var anios = Object.keys(porAnio).sort(function(a,b){ return b-a; });
+  cont.innerHTML = '';
+
+  anios.forEach(function(anio, ai){
+    var block = document.createElement('div');
+    block.className = 'ha-year-block' + (ai===0?' open':'');
+    block.id = 'haYear_'+anio;
+
+    // Totales del año
+    var periodos = porAnio[anio];
+    var totalAnio = periodos.reduce(function(s,p){ return s+p.totales.total; }, 0);
+    var hsAnio    = periodos.reduce(function(s,p){ return s+p.totales.horas; }, 0);
+
+    block.innerHTML =
+      '<div class="ha-year-header" onclick="toggleHaYear(\'haYear_'+anio+'\')">'
+      +'<span class="ha-year-chevron">▶</span>'
+      +'<span class="ha-year-title">'+anio+'</span>'
+      +'<span class="ha-year-badge">'+periodos.length+' período'+(periodos.length!==1?'s':'')+'</span>'
+      +'<span class="ha-year-badge" style="background:rgba(255,255,255,.12)">'+hsAnio.toFixed(0)+'h &nbsp;·&nbsp; $'+Math.round(totalAnio).toLocaleString('es-AR')+'</span>'
+      +'</div>'
+      +'<div class="ha-months" id="haMonths_'+anio+'"></div>';
+
+    cont.appendChild(block);
+
+    var monthsCont = block.querySelector('.ha-months');
+    periodos.forEach(function(p){
+      var mcard = document.createElement('div');
+      mcard.className = 'ha-month-card';
+      var hid = 'haM_'+p.nombre.replace(/\s/g,'_');
+
+      var headerHtml =
+        '<div class="ha-month-header" id="'+hid+'_h" onclick="toggleHaMonth(\''+hid+'\')">'
+        +'<div class="ha-month-name">'+p.nombre+'</div>'
+        +'<div class="ha-month-meta">'
+        +(p._synced ? '<span class="ha-validated-badge" title="Sincronizado con Google Sheets"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Sheets</span>' : '<span style="font-size:10px;color:var(--ink4);padding:2px 7px;background:var(--border2);border-radius:10px;font-weight:600">Solo local</span>')
+        +'<div class="ha-month-stat"><div class="ha-month-stat-val">'+p.totales.empleados+'</div><div class="ha-month-stat-lbl">Empleados</div></div>'
+        +'<div class="ha-month-stat"><div class="ha-month-stat-val">'+p.totales.dias+'</div><div class="ha-month-stat-lbl">Jornadas</div></div>'
+        +'<div class="ha-month-stat"><div class="ha-month-stat-val">'+p.totales.horas.toFixed(1)+'h</div><div class="ha-month-stat-lbl">Hs totales</div></div>'
+        +'<div class="ha-month-stat"><div class="ha-month-stat-val">'+p.totales.extra.toFixed(1)+'h</div><div class="ha-month-stat-lbl">Hs extra</div></div>'
+        +'<div class="ha-month-stat"><div class="ha-month-total">$'+Math.round(p.totales.total).toLocaleString('es-AR')+'</div><div class="ha-month-stat-lbl">Total liquidado</div></div>'
+        +'</div>'
+        +'<div class="ha-actions">'
+        +'<button class="ha-del-btn" onclick="event.stopPropagation();eliminarPeriodoHistorial(\''+p.nombre+'\')" title="Eliminar período">'
+        +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>'
+        +'</button>'
+        +'</div>'
+        +'<span class="ha-month-chevron">▶</span>'
+        +'</div>';
+
+      // Detalle empleados
+      var detailHtml = '<div class="ha-month-detail" id="'+hid+'_d">'
+        +'<div style="font-size:11px;color:var(--ink4);margin-bottom:10px">Guardado el '+new Date(p.guardado).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+(p.desde?' &nbsp;·&nbsp; Período: '+fmtF(p.desde)+' al '+fmtF(p.hasta):'')+'</div>'
+        +'<div class="table-wrap"><table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Empleado</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Sector</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:center">Días</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs norm. diurna</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs norm. nocturna</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs extra</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs sábado</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs domingo</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs feriado</th>'
+        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Total $</th>'
+        +'</tr></thead><tbody>';
+
+      p.empleados.forEach(function(e, ei){
+        var bg = ei%2===1 ? 'background:#fafcfa;' : '';
+        detailHtml += '<tr style="'+bg+'">'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2)"><div style="display:flex;align-items:center;gap:7px"><div class="avatar '+getAvColor(e.nombre)+'">'+ini(e.nombre)+'</div>'+e.nombre+'</div></td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2)">'+bSec(e.sector)+'</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:center;font-weight:600">'+e.dias+'</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+e.normDiurna.toFixed(1)+'h</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+e.normNocturna.toFixed(1)+'h</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.extra>0?'<span style="color:var(--orange);font-weight:700">'+e.extra.toFixed(1)+'h</span>':'-')+'</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.hsSabado>0?e.hsSabado.toFixed(1)+'h':'-')+'</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.hsDomingo>0?e.hsDomingo.toFixed(1)+'h':'-')+'</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.hsFeriado>0?e.hsFeriado.toFixed(1)+'h':'-')+'</td>'
+          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right;font-weight:700;color:var(--g2)">$'+Math.round(e.total).toLocaleString('es-AR')+'</td>'
+          +'</tr>';
+      });
+
+      // Fila de totales
+      detailHtml += '<tr style="background:linear-gradient(180deg,#eaf4ee,#e2f0e8);font-weight:700;border-top:2px solid var(--g8)">'
+        +'<td style="padding:7px 10px" colspan="2">Total del período</td>'
+        +'<td style="padding:7px 10px;text-align:center">'+p.totales.dias+'</td>'
+        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.normDiurna;},0).toFixed(1)+'h</td>'
+        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.normNocturna;},0).toFixed(1)+'h</td>'
+        +'<td style="padding:7px 10px;text-align:right">'+p.totales.extra.toFixed(1)+'h</td>'
+        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.hsSabado;},0).toFixed(1)+'h</td>'
+        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.hsDomingo;},0).toFixed(1)+'h</td>'
+        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.hsFeriado;},0).toFixed(1)+'h</td>'
+        +'<td style="padding:7px 10px;text-align:right;color:var(--g2);font-size:14px">$'+Math.round(p.totales.total).toLocaleString('es-AR')+'</td>'
+        +'</tr>';
+
+      detailHtml += '</tbody></table></div></div>';
+      mcard.innerHTML = headerHtml + detailHtml;
+      monthsCont.appendChild(mcard);
+    });
+  });
+}
+
+function toggleHaYear(id){
+  var block = document.getElementById(id);
+  if(!block) return;
+  block.classList.toggle('open');
+}
+
+function toggleHaMonth(hid){
+  var header = document.getElementById(hid+'_h');
+  var detail = document.getElementById(hid+'_d');
+  if(!header||!detail) return;
+  var isOpen = header.classList.contains('open-m');
+  header.classList.toggle('open-m', !isOpen);
+  detail.style.display = isOpen ? 'none' : 'block';
+}
+
+function exportarHistorialCSV(){
+  var hist = getHistorialAnual();
+  if(!hist.length){ alert('No hay períodos guardados en el historial.'); return; }
+  var rows = [['Período','Año','Empleado','Sector','Días','Hs Norm. Diurna','Hs Norm. Nocturna','Hs Extra','Hs Sábado','Hs Domingo','Hs Feriado','Total $','Guardado']];
+  hist.forEach(function(p){
+    p.empleados.forEach(function(e){
+      rows.push([p.nombre,p.anio,e.nombre,e.sector,e.dias,e.normDiurna,e.normNocturna,e.extra,e.hsSabado,e.hsDomingo,e.hsFeriado,e.total,new Date(p.guardado).toLocaleDateString('es-AR')]);
+    });
+  });
+  var bom = '\uFEFF';
+  var csv = bom + rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='historial_anual_vitagro.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+// ======== HISTORIAL ANUAL — SYNC CON SHEETS ========
+
+function setSyncBar(tipo, msg){
+  var bar = document.getElementById('haSyncBar');
+  if(!bar) return;
+  var estilos = {
+    cargando: 'background:#edf2fb;color:var(--blue);border:1.5px solid #b3d4f0',
+    ok:       'background:#e5f3e8;color:#1e5c28;border:1.5px solid var(--g8)',
+    error:    'background:var(--orange-bg);color:var(--orange);border:1.5px solid #f5c89a',
+    local:    'background:var(--border2);color:var(--ink3);border:1.5px solid var(--border)'
+  };
+  var iconos = {
+    cargando: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>',
+    ok:       '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+    error:    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    local:    '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>'
+  };
+  bar.style.cssText = 'display:flex;margin-bottom:16px;padding:10px 14px;border-radius:var(--r);font-size:12px;font-weight:500;align-items:center;gap:10px;'+estilos[tipo];
+  bar.innerHTML = iconos[tipo] + msg;
+}
+
+function enviarHistorialASheets(registro){
+  var url = cfg('cfg_gscript').trim();
+  if(!url) return; // sin URL configurada, solo local
+
+  var payload = encodeURIComponent(JSON.stringify({
+    accion:    'historialAnual',
+    periodo:   registro.nombre,
+    anio:      registro.anio,
+    desde:     registro.desde,
+    hasta:     registro.hasta,
+    guardado:  registro.guardado,
+    totales:   registro.totales,
+    empleados: registro.empleados
+  }));
+
+  fetch(url + '?historial=' + payload)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.status === 'ok'){
+        // Marcar período como sincronizado
+        var hist = getHistorialAnual();
+        var idx = hist.findIndex(function(p){ return p.nombre === registro.nombre; });
+        if(idx >= 0){ hist[idx]._synced = true; saveHistorialAnual(hist); renderHistorialAnual(); }
+      }
+    })
+    .catch(function(){}); // fallo silencioso — el dato ya está en localStorage
+}
+
+function cargarHistorialDesdeSheets(manual){
+  var url = cfg('cfg_gscript').trim();
+  if(!url){
+    if(manual) alert('Configurá la URL del Web App en Configuración → Google Sheets.');
+    return;
+  }
+
+  var btn = document.getElementById('btnSyncHistorial');
+  if(btn){ btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+  setSyncBar('cargando', 'Conectando con Google Sheets...');
+
+  fetch(url + '?leerHistorial=1')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.status !== 'ok' || !Array.isArray(d.historial)){
+        throw new Error(d.mensaje || 'Respuesta inesperada');
+      }
+
+      var remoto = d.historial; // array de registros
+      if(!remoto.length){
+        setSyncBar('local', 'Sheets no tiene datos de historial aún. Mostrando datos locales.');
+        if(btn){ btn.disabled=false; btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar'; }
+        return;
+      }
+
+      // Merge: remoto tiene precedencia, conservar locales no presentes en remoto
+      var local = getHistorialAnual();
+      var merged = {};
+      local.forEach(function(p){ merged[p.nombre] = p; });
+      remoto.forEach(function(p){ merged[p.nombre] = Object.assign({}, p, {_synced:true}); });
+      var arr = Object.values(merged).sort(function(a,b){ return b.guardado.localeCompare(a.guardado); });
+      saveHistorialAnual(arr);
+      renderHistorialAnual();
+
+      var nuevos = remoto.filter(function(p){ return !local.find(function(l){ return l.nombre===p.nombre; }); }).length;
+      setSyncBar('ok', 'Historial sincronizado con Sheets. '+(nuevos?nuevos+' período'+(nuevos!==1?'s':'')+' nuevo'+(nuevos!==1?'s':'')+' incorporado'+(nuevos!==1?'s':'.'): 'Todo actualizado.'));
+      if(btn){ btn.disabled=false; btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar'; }
+    })
+    .catch(function(e){
+      setSyncBar('error', 'No se pudo conectar con Sheets. Mostrando datos locales. ('+e.message+')');
+      if(btn){ btn.disabled=false; btn.innerHTML='<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> Sincronizar'; }
+    });
+}
+
+// ======== PERÍODO EN CURSO ========
+
+// Días hábiles del mes (Lun-Sáb, sin feriados)
+function diasHabilesDelMes(mesISO){
+  if(!mesISO) return 26; // default
+  var p = mesISO.split('-');
+  var anio = parseInt(p[0],10), mes = parseInt(p[1],10)-1;
+  var inicio = new Date(anio,mes,1), fin = new Date(anio,mes+1,0);
+  var count = 0;
+  for(var d = new Date(inicio); d <= fin; d.setDate(d.getDate()+1)){
+    var dow = d.getDay();
+    if(dow !== 0) count++; // excluir domingos
+  }
+  return count;
+}
+
+function abrirNuevaAuditoria(){
+  var pa = getPeriodoActivo();
+  if(!pa){
+    // Pedir nombre de período antes de importar
+    var hoy = new Date();
+    var mesStr = hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0');
+    var MESES_L=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    document.getElementById('npNombre').value = MESES_L[hoy.getMonth()]+' '+hoy.getFullYear();
+    document.getElementById('npMes').value = mesStr;
+    document.getElementById('modalNuevoPeriodo').classList.add('open');
+  } else {
+    // Ya hay período activo — ir directo al importar con rango sugerido
+    goPanel('panelImport', document.getElementById('nav-import'));
+    sugerirRangoSiguienteAuditoria(pa);
+  }
+}
+
+function sugerirRangoSiguienteAuditoria(pa){
+  // Calcular el primer día no cubierto
+  if(!pa.auditorias || !pa.auditorias.length){
+    // Primera auditoría: desde el 1ro del mes
+    if(pa.mes){
+      setRangoDesde(pa.mes+'-01');
+      var fin = new Date(pa.mes+'-01');
+      fin.setDate(fin.getDate()+6);
+      setRangoHasta(toISO(fin));
+    }
+    return;
+  }
+  var ultHasta = pa.auditorias.reduce(function(max,a){
+    return a.hasta > max ? a.hasta : max;
+  }, '');
+  if(ultHasta){
+    var sig = new Date(ultHasta);
+    sig.setDate(sig.getDate()+1);
+    setRangoDesde(toISO(sig));
+    var fin2 = new Date(sig);
+    fin2.setDate(fin2.getDate()+6);
+    setRangoHasta(toISO(fin2));
+  }
+}
+
+function setRangoDesde(iso){ /* set the dpicker values */
+  window._sugeridoDesde = iso;
+  var p=iso.split('-');
+  var el=document.getElementById('selDesdeDia');  if(el) el.value=parseInt(p[2],10);
+  var em=document.getElementById('selDesdeMes');  if(em) em.value=parseInt(p[1],10);
+  var ea=document.getElementById('selDesdeAnio'); if(ea) ea.value=p[0];
+  actualizarDesde&&actualizarDesde();
+}
+function setRangoHasta(iso){
+  var p=iso.split('-');
+  var el=document.getElementById('selHastaDia');  if(el) el.value=parseInt(p[2],10);
+  var em=document.getElementById('selHastaMes');  if(em) em.value=parseInt(p[1],10);
+  var ea=document.getElementById('selHastaAnio'); if(ea) ea.value=p[0];
+  actualizarHasta&&actualizarHasta();
+}
+
+function confirmarNuevoPeriodo(){
+  var nombre = document.getElementById('npNombre').value.trim();
+  var mes    = document.getElementById('npMes').value;
+  if(!nombre){ alert('Ingresá un nombre para el período.'); return; }
+  // Crear período activo vacío
+  var pa = {
+    nombre:    nombre,
+    mes:       mes,
+    auditorias:[],
+    jornadas:  [],
+    descolgadas:[],
+    resumen:   [],
+    descansos: [],
+    creadoEl:  new Date().toISOString(),
+    ultimaSync:null
+  };
+  savePeriodoActivo(pa);
+  document.getElementById('modalNuevoPeriodo').classList.remove('open');
+  renderPeriodoActivo();
+  // Ir al importar con rango sugerido
+  goPanel('panelImport', document.getElementById('nav-import'));
+  sugerirRangoSiguienteAuditoria(pa);
+}
+
+function renderPeriodoActivo(){
+  var pa = getPeriodoActivo();
+  var hero = document.getElementById('pcHero');
+  var audDiv = document.getElementById('pcAuditorias');
+  var syncDiv = document.getElementById('pcSyncStatus');
+  var alertDiv = document.getElementById('pcCompleteAlert');
+  if(!hero) return;
+
+  if(!pa){
+    hero.innerHTML =
+      '<div class="empty-state" style="padding:40px 24px">'
+      +'<div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--g4)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>'
+      +'<h3 style="font-size:15px;font-weight:700;color:var(--ink3);margin-bottom:6px">Sin período activo</h3>'
+      +'<p style="font-size:13px;color:var(--ink4);margin-bottom:16px">Iniciá una nueva auditoría para comenzar a cargar el mes.</p>'
+      +'<button class="btn btn-primary" onclick="abrirNuevaAuditoria()">'
+      +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+      +'Nueva auditoría</button></div>';
+    if(audDiv) audDiv.innerHTML = '<div style="font-size:12px;color:var(--ink4);padding:8px 0">Sin auditorías aún.</div>';
+    if(alertDiv) alertDiv.style.display = 'none';
+    // Update nav badge
+    document.getElementById('badgePeriodo').style.display='none';
+    return;
+  }
+
+  // Calcular progreso
+  var diasHab = diasHabilesDelMes(pa.mes);
+  var jornadasUnicas = {};
+  (pa.jornadas||[]).forEach(function(j){ jornadasUnicas[j.nombre+'|'+j.fecha]=1; });
+  var diasCargados = Object.keys(jornadasUnicas).length;
+  var pct = Math.min(100, Math.round(diasCargados/Math.max(diasHab,1)*100));
+
+  var totHs  = (pa.jornadas||[]).reduce(function(s,j){return s+j.hsTrabajadas;},0);
+  var totEx  = (pa.jornadas||[]).reduce(function(s,j){return s+j.hsExtra;},0);
+  var totP   = (pa.jornadas||[]).reduce(function(s,j){return s+j.total;},0);
+  var totEmp = (pa.resumen||[]).length;
+
+  hero.innerHTML =
+    '<div class="pc-hero">'
+    +'<div class="pc-hero-title">Período activo</div>'
+    +'<div class="pc-hero-nombre">'+pa.nombre+'</div>'
+    +'<div class="pc-hero-sub">'+(pa.mes||'')+(pa.auditorias&&pa.auditorias.length?' · '+pa.auditorias.length+' auditoría'+(pa.auditorias.length!==1?'s':''):'')+'</div>'
+    +'<div class="pc-progress-wrap">'
+    +'<div class="pc-progress-label"><span>Progreso del mes</span><span>'+diasCargados+' jornadas cargadas / ~'+diasHab+' días hábiles</span></div>'
+    +'<div class="pc-progress-bar"><div class="pc-progress-fill" style="width:'+pct+'%"></div></div>'
+    +'</div>'
+    +'<div class="pc-stats">'
+    +'<div class="pc-stat"><div class="pc-stat-val">'+totEmp+'</div><div class="pc-stat-lbl">Empleados</div></div>'
+    +'<div class="pc-stat"><div class="pc-stat-val">'+totHs.toFixed(1)+'h</div><div class="pc-stat-lbl">Hs trabajadas</div></div>'
+    +'<div class="pc-stat"><div class="pc-stat-val">'+totEx.toFixed(1)+'h</div><div class="pc-stat-lbl">Hs extra</div></div>'
+    +'<div class="pc-stat"><div class="pc-stat-val" style="font-size:15px">$'+Math.round(totP).toLocaleString('es-AR')+'</div><div class="pc-stat-lbl">Total acumulado</div></div>'
+    +'</div>'
+    +'</div>';
+
+  // Auditorías
+  if(audDiv){
+    if(!pa.auditorias||!pa.auditorias.length){
+      audDiv.innerHTML='<div style="font-size:12px;color:var(--ink4);padding:4px 0">Sin auditorías aún. Importá el primer tramo del log.</div>';
+    } else {
+      audDiv.innerHTML = '<div class="pc-auditoria-list">'
+        + pa.auditorias.map(function(a,ai){
+          return '<div class="pc-auditoria-item">'
+            +'<div class="pc-aud-dot"></div>'
+            +'<div>'
+              +'<div class="pc-aud-fecha">Auditoría '+(ai+1)+' · '+a.fechaImport+'</div>'
+              +'<div class="pc-aud-rango">'+fmtF(a.desde)+' al '+fmtF(a.hasta)+'</div>'
+            +'</div>'
+            +'<div class="pc-aud-marc">+'+a.marcaciones+' marcaciones</div>'
+            +'<button class="pc-aud-del" onclick="eliminarAuditoria('+ai+')" title="Eliminar esta auditoría">'
+            +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+            +'</button>'
+            +'</div>';
+        }).join('') + '</div>';
+    }
+  }
+
+  // Sync status
+  if(syncDiv){
+    var url = cfg('cfg_gscript').trim();
+    if(!url) syncDiv.innerHTML='<span style="color:var(--ink4)">Google Sheets no configurado. Configurá la URL en Configuración.</span>';
+    else if(pa.ultimaSync) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Última sync: '+new Date(pa.ultimaSync).toLocaleString('es-AR')+'</span>';
+    else syncDiv.innerHTML='<span style="color:var(--orange)">Pendiente de sincronizar con Sheets</span>';
+  }
+
+  // Alerta de mes completo (pct >= 95%)
+  if(alertDiv) alertDiv.style.display = (pct >= 95 ? '' : 'none');
+
+  // Badge nav
+  var badge = document.getElementById('badgePeriodo');
+  if(badge){ badge.style.display=''; badge.textContent=pa.auditorias?pa.auditorias.length:0; }
+
+  // Cargar en datosGlobales para que el reporte funcione
+  cargarPeriodoEnDatosGlobales(pa);
+}
+
+function cargarPeriodoEnDatosGlobales(pa){
+  if(!pa||!pa.jornadas||!pa.jornadas.length) return;
+  datosGlobales = {
+    jornadas:   pa.jornadas,
+    descansos:  pa.descansos||[],
+    resumen:    pa.resumen||[],
+    descolgadas:pa.descolgadas||[],
+    _desde:     pa.mes ? pa.mes+'-01' : '',
+    _hasta:     pa.mes ? pa.mes+'-31' : ''
+  };
+  // Habilitar nav items
+  var navR=document.getElementById('nav-reporte');
+  if(navR){navR.style.opacity='';navR.style.pointerEvents='';}
+  var navCal=document.getElementById('nav-calendario');
+  if(navCal){navCal.style.opacity='';navCal.style.pointerEvents='';}
+  // Sync selects
+  var empC = (pa.resumen||[]).length;
+  var totHs=(pa.jornadas||[]).reduce(function(s,j){return s+j.hsTrabajadas;},0);
+  var totEx=(pa.jornadas||[]).reduce(function(s,j){return s+j.hsExtra;},0);
+  var totP =(pa.jornadas||[]).reduce(function(s,j){return s+j.total;},0);
+  var el=document.getElementById('met_emp'); if(el) el.textContent=empC;
+  var hs=document.getElementById('met_hs');  if(hs) hs.textContent=totHs.toFixed(1)+'h';
+  var ex=document.getElementById('met_ex');  if(ex) ex.textContent=totEx.toFixed(1)+'h';
+  var tt=document.getElementById('met_tot'); if(tt) tt.textContent='$'+Math.round(totP).toLocaleString('es-AR');
+  var se=document.getElementById('fil_emp');
+  var sp=document.getElementById('pdf_emp');
+  if(se){ se.innerHTML='<option value="">Todos los empleados</option>'; }
+  if(sp){ sp.innerHTML='<option value="">Todos</option>'; }
+  (pa.resumen||[]).map(function(r){return r.nombre;}).sort().forEach(function(n){
+    if(se){var o=document.createElement('option');o.value=n;o.textContent=n;se.appendChild(o);}
+    if(sp){var o2=document.createElement('option');o2.value=n;o2.textContent=n;sp.appendChild(o2);}
+  });
+  actualizarBadgeDesc();
+}
+
+function eliminarAuditoria(idx){
+  if(!confirm('¿Eliminar la auditoría '+(idx+1)+'? Las marcaciones de ese tramo se quitarán del período.')) return;
+  var pa = getPeriodoActivo();
+  if(!pa) return;
+  var aud = pa.auditorias[idx];
+  // Filtrar jornadas y descansos del rango de esa auditoría
+  pa.jornadas = (pa.jornadas||[]).filter(function(j){
+    return j.fecha < aud.desde || j.fecha > aud.hasta;
+  });
+  pa.descansos = (pa.descansos||[]).filter(function(d){
+    return d.fecha < aud.desde || d.fecha > aud.hasta;
+  });
+  // Eliminar marcaciones del hist antiduplicados para ese rango
+  var hist = getHist();
+  var nuevaHist = new Set([...hist].filter(function(k){
+    // key format: enNo|fecha|hora
+    var parts = k.split('|');
+    var fecha = parts[1]||'';
+    return fecha < aud.desde || fecha > aud.hasta;
+  }));
+  saveHist(nuevaHist);
+  pa.auditorias.splice(idx,1);
+  // Reconstruir resumen desde jornadas restantes
+  pa.resumen = reconstruirResumenDesdejornadas(pa.jornadas);
+  savePeriodoActivo(pa);
+  renderPeriodoActivo();
+  renderReportes();
+}
+
+function reconstruirResumenDesdejornadas(jornadas){
+  var resumen={};
+  (jornadas||[]).forEach(function(j){
+    if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[],_descuentos:[],_notas:'',_totalManual:null};
+    var r=resumen[j.nombre];
+    r.dias++;r.horas+=j.hsTrabajadas;r.extra+=j.hsExtra;r.descMin+=(j.descDescMin||0);
+    if(j.mult===2)r.dobles++;r.total+=j.total;
+    r.normDiurna+=(j.desglose&&j.desglose.normDiurna||0);r.normNocturna+=(j.desglose&&j.desglose.normNocturna||0);
+    r.extraDiurna+=(j.desglose&&j.desglose.extraDiurna||0);r.extraNocturna+=(j.desglose&&j.desglose.extraNocturna||0);
+    r.hsSabado+=(j.desglose&&j.desglose.hsSabado||0);r.hsDomingo+=(j.desglose&&j.desglose.hsDomingo||0);r.hsFeriado+=(j.desglose&&j.desglose.hsFeriado||0);
+    r.jornadas.push(j);
+  });
+  return Object.values(resumen);
+}
+
+function cerrarMesManual(){
+  var pa = getPeriodoActivo();
+  if(!pa||!pa.jornadas||!pa.jornadas.length){
+    alert('No hay datos en el período actual para cerrar.');return;
+  }
+  if(!confirm('¿Cerrar y validar el mes "'+pa.nombre+'"?\n\nEl período se guardará en el Historial Anual y en Google Sheets.\nEl período en curso quedará vacío y listo para el próximo mes.')) return;
+  // Forzar validar con los datos actuales
+  datosGlobales = {
+    jornadas:pa.jornadas, descansos:pa.descansos||[],
+    resumen:pa.resumen||[], descolgadas:pa.descolgadas||[],
+    _desde:pa.mes?pa.mes+'-01':'', _hasta:pa.mes?pa.mes+'-31':''
+  };
+  // Usar el modal de validar con el nombre ya completado
+  document.getElementById('validarPeriodoNombre').value = pa.nombre;
+  abrirModalValidar();
+}
+
+// Hook: después de confirmar validar, limpiar el período activo
+var _origConfirmarValidar = typeof confirmarValidar !== 'undefined' ? confirmarValidar : null;
+
+// Sincronización del período activo con Sheets
+function sincronizarPeriodoConSheets(){
+  var pa = getPeriodoActivo();
+  var url = cfg('cfg_gscript').trim();
+  if(!url){ alert('Configurá la URL del Web App en Configuración → Google Sheets.'); return; }
+  if(!pa){ alert('No hay período activo para sincronizar.'); return; }
+
+  var syncDiv = document.getElementById('pcSyncStatus');
+  if(syncDiv) syncDiv.innerHTML='<span style="color:var(--blue)">Sincronizando...</span>';
+
+  var payload = encodeURIComponent(JSON.stringify({
+    accion:   'periodoActivo',
+    nombre:   pa.nombre,
+    mes:      pa.mes,
+    auditorias: pa.auditorias,
+    jornadas: (pa.jornadas||[]).map(function(j){
+      return {nombre:j.nombre,sector:j.sector,fecha:j.fecha,
+              hsTrabajadas:j.hsTrabajadas,hsExtra:j.hsExtra,total:j.total};
+    }),
+    resumen:  (pa.resumen||[]).map(function(r){
+      return {nombre:r.nombre,sector:r.sector,dias:r.dias,horas:r.horas,extra:r.extra,total:r.total,
+              normDiurna:r.normDiurna||0,normNocturna:r.normNocturna||0,hsSabado:r.hsSabado||0,hsDomingo:r.hsDomingo||0,hsFeriado:r.hsFeriado||0};
+    }),
+    guardado: new Date().toISOString()
+  }));
+
+  fetch(url+'?periodoActivo='+payload)
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.status==='ok'){
+        pa.ultimaSync = new Date().toISOString();
+        savePeriodoActivo(pa);
+        if(syncDiv) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Sincronizado: '+new Date().toLocaleString('es-AR')+'</span>';
+      } else throw new Error(d.mensaje||'Error');
+    })
+    .catch(function(e){
+      if(syncDiv) syncDiv.innerHTML='<span style="color:var(--red)">Error al sincronizar: '+e.message+'</span>';
+    });
+}
+
+function cargarPeriodoDesdeSheets(manual){
+  var url = cfg('cfg_gscript').trim();
+  if(!url){
+    if(manual) alert('Configurá la URL del Web App en Configuración → Google Sheets.');
+    return;
+  }
+  var syncDiv = document.getElementById('pcSyncStatus');
+  if(syncDiv) syncDiv.innerHTML='<span style="color:var(--blue)">Descargando desde Sheets...</span>';
+
+  fetch(url+'?leerPeriodoActivo=1')
+    .then(function(r){return r.json();})
+    .then(function(d){
+      if(d.status!=='ok'||!d.periodo) throw new Error('Sin datos en Sheets');
+      var remoto = d.periodo;
+      var local  = getPeriodoActivo();
+      // Usar el más reciente
+      if(!local||!local.ultimaSync||(remoto.guardado>local.ultimaSync)){
+        // El remoto es más nuevo — usarlo
+        savePeriodoActivo(remoto);
+        renderPeriodoActivo();
+        if(syncDiv) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Período cargado desde Sheets</span>';
+      } else {
+        if(syncDiv) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Local ya está actualizado</span>';
+      }
+    })
+    .catch(function(e){
+      if(syncDiv) syncDiv.innerHTML='<span style="color:var(--orange)">No se encontró período activo en Sheets. ('+(e.message)+')</span>';
+    });
+}
+
 // ======== INIT ========
 loadConfig();
 updateHistCount();
@@ -3160,6 +4203,17 @@ buildDpicker('Hasta');
 setRangoMesActual();
 document.getElementById('topLogo').src=LOGO_DATA;
 renderHistorial();
+renderHistorialAnual();
+renderPeriodoActivo();
+// Restaurar período activo en datosGlobales al abrir la app
+(function(){
+  var pa = getPeriodoActivo();
+  if(pa && pa.jornadas && pa.jornadas.length){
+    cargarPeriodoEnDatosGlobales(pa);
+    // Intentar bajar la versión más reciente de Sheets en background
+    cargarPeriodoDesdeSheets(false);
+  }
+})();
 </script>
 </body>
 </html>
