@@ -1942,11 +1942,12 @@ function generarReporte(agrupado,saltadas,desde,hasta){
   jornadas.forEach(function(j){
     if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[],_descuentos:[],_notas:'',_totalManual:null};
     var r=resumen[j.nombre];
-    r.dias++;r.horas+=j.hsTrabajadas;r.extra+=j.hsExtra;r.descMin+=j.descDescMin;
-    if(j.mult===2)r.dobles++;r.total+=j.total;
-    r.normDiurna+=j.desglose.normDiurna;r.normNocturna+=j.desglose.normNocturna;
-    r.extraDiurna+=j.desglose.extraDiurna;r.extraNocturna+=j.desglose.extraNocturna;
-    r.hsSabado+=j.desglose.hsSabado;r.hsDomingo+=j.desglose.hsDomingo;r.hsFeriado+=j.desglose.hsFeriado;
+    var dsgG=j.desglose||{};
+    r.dias++;r.horas+=(j.hsTrabajadas||0);r.extra+=(j.hsExtra||0);r.descMin+=(j.descDescMin||0);
+    if(j.mult===2)r.dobles++;r.total+=(j.total||0);
+    r.normDiurna+=(dsgG.normDiurna||0);r.normNocturna+=(dsgG.normNocturna||0);
+    r.extraDiurna+=(dsgG.extraDiurna||0);r.extraNocturna+=(dsgG.extraNocturna||0);
+    r.hsSabado+=(dsgG.hsSabado||0);r.hsDomingo+=(dsgG.hsDomingo||0);r.hsFeriado+=(dsgG.hsFeriado||0);
     r.jornadas.push(j);
   });
 
@@ -2080,11 +2081,13 @@ function renderReportes(){
   var b0=document.getElementById('body_det');b0.innerHTML='';
   d.jornadas.forEach(function(j){
     var tr=document.createElement('tr');
+    var hsT=j.hsTrabajadas||0, hsE=j.hsExtra||0;
+    var descT=j.totalDescMin||0, descD=j.descDescMin||0;
     tr.innerHTML='<td><div class="name-cell"><div class="avatar '+getAvColor(j.nombre)+'">'+ini(j.nombre)+'</div>'+j.nombre+'</div></td>'
       +'<td>'+bSec(j.sector)+'</td><td>'+fmtF(j.fecha)+'</td><td>'+fmtH(j.entrada)+'</td><td>'+fmtH(j.salida)+'</td>'
-      +'<td>'+bTurno(j.turno)+'</td><td>'+Math.round(j.totalDescMin)+' min</td><td>'+Math.round(j.descDescMin)+' min</td>'
-      +'<td>'+j.hsTrabajadas.toFixed(2)+'h</td><td>'+(j.hsExtra>0?j.hsExtra.toFixed(2)+'h':'-')+'</td>'
-      +'<td>'+bDia(j.tipoDia,j.mult)+'</td><td><strong>'+pesos(j.total)+'</strong></td>';
+      +'<td>'+bTurno(j.turno||{})+'</td><td>'+Math.round(descT)+' min</td><td>'+Math.round(descD)+' min</td>'
+      +'<td>'+hsT.toFixed(2)+'h</td><td>'+(hsE>0?hsE.toFixed(2)+'h':'-')+'</td>'
+      +'<td>'+bDia(j.tipoDia||'Normal',j.mult||1)+'</td><td><strong>'+pesos(j.total||0)+'</strong></td>';
     b0.appendChild(tr);
   });
 
@@ -2132,9 +2135,12 @@ function renderReportes(){
       +'<th>Hs norm.</th><th>Tarifa</th><th>Hs extra</th><th>T. extra</th>'
       +'<th>Hs doble</th><th>Mult.</th><th>Total</th><th></th></tr></thead><tbody>';
     r.jornadas.forEach(function(j){
-      var esN2=j.turno&&j.turno.tipo==='noche';
-      var tBase2=esN2?tN:tD;var tExt2=tBase2*(1+ep);var hsN2=j.hsTrabajadas-j.hsExtra;
-      var hsDbl=(j.desglose.hsSabado||0)+(j.desglose.hsDomingo||0)+(j.desglose.hsFeriado||0);
+      var turno2 = j.turno||{};
+      var desglose2 = j.desglose||{};
+      var esN2 = turno2.tipo==='noche';
+      var tBase2=esN2?tN:tD;var tExt2=tBase2*(1+ep);
+      var hsN2=Math.max(0,(j.hsTrabajadas||0)-(j.hsExtra||0));
+      var hsDbl=(desglose2.hsSabado||0)+(desglose2.hsDomingo||0)+(desglose2.hsFeriado||0);
       // Buscar por nombre+fecha en lugar de indexOf (más robusto tras recalcularResumen)
       var jIdx=datosGlobales.jornadas.findIndex(function(jj){return jj.nombre===j.nombre&&jj.fecha===j.fecha;});
       inner+='<tr>'
@@ -2280,7 +2286,7 @@ function exportarCSV(){
   if(!datosGlobales){alert('No hay datos.');return;}
   var d=filtrarDatos();
   var cols=['Empleado','Sector','Fecha','Entrada','Salida','Turno','Desc total(min)','Desc desc(min)','Hs trabajadas','Hs extra','Hs norm diurna','Hs norm nocturna','Hs extra diurna','Hs extra nocturna','Hs sabado','Hs domingo','Hs feriado','Tipo dia','Total $'];
-  var rows=d.jornadas.map(function(j){return[j.nombre,j.sector,fmtF(j.fecha),fmtH(j.entrada),fmtH(j.salida),j.turno?j.turno.label:'',Math.round(j.totalDescMin),Math.round(j.descDescMin),j.hsTrabajadas.toFixed(2),j.hsExtra.toFixed(2),j.desglose.normDiurna.toFixed(2),j.desglose.normNocturna.toFixed(2),j.desglose.extraDiurna.toFixed(2),j.desglose.extraNocturna.toFixed(2),j.desglose.hsSabado.toFixed(2),j.desglose.hsDomingo.toFixed(2),j.desglose.hsFeriado.toFixed(2),j.tipoDia,Math.round(j.total)];});
+  var rows=d.jornadas.map(function(j){(function(dsgC){return[j.nombre,j.sector,fmtF(j.fecha),fmtH(j.entrada),fmtH(j.salida),j.turno?j.turno.label:'',Math.round(j.totalDescMin||0),Math.round(j.descDescMin||0),(j.hsTrabajadas||0).toFixed(2),(j.hsExtra||0).toFixed(2),(dsgC.normDiurna||0).toFixed(2),(dsgC.normNocturna||0).toFixed(2),(dsgC.extraDiurna||0).toFixed(2),(dsgC.extraNocturna||0).toFixed(2),(dsgC.hsSabado||0).toFixed(2),(dsgC.hsDomingo||0).toFixed(2),(dsgC.hsFeriado||0).toFixed(2),j.tipoDia||'Normal',Math.round(j.total||0)];})(j.desglose||{});});
   var csv=[cols].concat(rows).map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
   var url=URL.createObjectURL(blob),a=document.createElement('a');
@@ -2559,11 +2565,12 @@ function recalcularResumen(){
   datosGlobales.jornadas.forEach(function(j){
     if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[],_descuentos:j._descuentos||[],_notas:j._notas||'',_totalManual:j._totalManual||null};
     var r=resumen[j.nombre];
-    r.dias++;r.horas+=j.hsTrabajadas;r.extra+=j.hsExtra;r.descMin+=j.descDescMin;
-    if(j.mult===2)r.dobles++;r.total+=j.total;
-    r.normDiurna+=j.desglose.normDiurna;r.normNocturna+=j.desglose.normNocturna;
-    r.extraDiurna+=j.desglose.extraDiurna;r.extraNocturna+=j.desglose.extraNocturna;
-    r.hsSabado+=j.desglose.hsSabado;r.hsDomingo+=j.desglose.hsDomingo;r.hsFeriado+=j.desglose.hsFeriado;
+    var dsg2=j.desglose||{};
+    r.dias++;r.horas+=(j.hsTrabajadas||0);r.extra+=(j.hsExtra||0);r.descMin+=(j.descDescMin||0);
+    if(j.mult===2)r.dobles++;r.total+=(j.total||0);
+    r.normDiurna+=(dsg2.normDiurna||0);r.normNocturna+=(dsg2.normNocturna||0);
+    r.extraDiurna+=(dsg2.extraDiurna||0);r.extraNocturna+=(dsg2.extraNocturna||0);
+    r.hsSabado+=(dsg2.hsSabado||0);r.hsDomingo+=(dsg2.hsDomingo||0);r.hsFeriado+=(dsg2.hsFeriado||0);
     r.jornadas.push(j);
   });
   datosGlobales.resumen=Object.values(resumen);
@@ -2835,7 +2842,7 @@ function buildReciboHTML(r,periodo,empresa,descuentos,notas,totalManual,formato)
   (r.jornadas||[]).forEach(function(j){
     var esN=j.turno&&j.turno.tipo==='noche',tBase=esN?tN:tD;
     var hsN=j.hsTrabajadas-j.hsExtra;
-    var hsDbl=(j.desglose.hsSabado||0)+(j.desglose.hsDomingo||0)+(j.desglose.hsFeriado||0);
+    var dsgPDF=j.desglose||{};var hsDbl=(dsgPDF.hsSabado||0)+(dsgPDF.hsDomingo||0)+(dsgPDF.hsFeriado||0);
     filas+='<tr style="border-bottom:1px solid #e8f2eb">'
       +'<td style="padding:5px 7px">'+fmtF(j.fecha)+'</td>'
       +'<td style="padding:5px 7px">'+(j.turno?j.turno.label:'-')+'</td>'
@@ -4095,11 +4102,12 @@ function reconstruirResumenDesdejornadas(jornadas){
   (jornadas||[]).forEach(function(j){
     if(!resumen[j.nombre])resumen[j.nombre]={nombre:j.nombre,sector:j.sector,dias:0,horas:0,extra:0,descMin:0,dobles:0,total:0,normDiurna:0,normNocturna:0,extraDiurna:0,extraNocturna:0,hsSabado:0,hsDomingo:0,hsFeriado:0,jornadas:[],_descuentos:[],_notas:'',_totalManual:null};
     var r=resumen[j.nombre];
-    r.dias++;r.horas+=j.hsTrabajadas;r.extra+=j.hsExtra;r.descMin+=(j.descDescMin||0);
-    if(j.mult===2)r.dobles++;r.total+=j.total;
-    r.normDiurna+=(j.desglose&&j.desglose.normDiurna||0);r.normNocturna+=(j.desglose&&j.desglose.normNocturna||0);
-    r.extraDiurna+=(j.desglose&&j.desglose.extraDiurna||0);r.extraNocturna+=(j.desglose&&j.desglose.extraNocturna||0);
-    r.hsSabado+=(j.desglose&&j.desglose.hsSabado||0);r.hsDomingo+=(j.desglose&&j.desglose.hsDomingo||0);r.hsFeriado+=(j.desglose&&j.desglose.hsFeriado||0);
+    var dsg=j.desglose||{};
+    r.dias++;r.horas+=j.hsTrabajadas||0;r.extra+=j.hsExtra||0;r.descMin+=(j.descDescMin||0);
+    if(j.mult===2)r.dobles++;r.total+=j.total||0;
+    r.normDiurna+=(dsg.normDiurna||0);r.normNocturna+=(dsg.normNocturna||0);
+    r.extraDiurna+=(dsg.extraDiurna||0);r.extraNocturna+=(dsg.extraNocturna||0);
+    r.hsSabado+=(dsg.hsSabado||0);r.hsDomingo+=(dsg.hsDomingo||0);r.hsFeriado+=(dsg.hsFeriado||0);
     r.jornadas.push(j);
   });
   return Object.values(resumen);
