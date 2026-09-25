@@ -752,66 +752,29 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
   <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:22px">
     <div class="page-header" style="margin-bottom:0">
       <div class="page-title">Período en curso</div>
-      <div class="page-sub">Acumulá auditorías semana a semana. El sistema suma las marcaciones nuevas sin pisar las anteriores.</div>
+      <div class="page-sub">Cargá el log semana a semana. El sistema acumula los bloques hasta completar el mes.</div>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn btn-outline btn-sm" onclick="abrirNuevaAuditoria()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Nueva auditoría
+        Cargar próxima semana
       </button>
-      <button class="btn btn-sm" onclick="cerrarMesManual()" style="border-color:var(--g4);color:var(--g4)">
+      <button class="btn btn-sm" onclick="cerrarMesManual()" style="background:var(--g2);color:#fff;border-color:var(--g2)">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
-        Cerrar y validar mes
+        Cerrar y liquidar mes
       </button>
     </div>
   </div>
-  <div id="pcCompleteAlert" style="display:none" class="pc-complete-alert">
+  <div id="pcCompleteAlert" style="display:none;margin-bottom:16px" class="pc-complete-alert">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--g4)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/></svg>
     <div style="flex:1">
       <div style="font-size:13px;font-weight:700;color:var(--g2)">El mes parece completo</div>
-      <div style="font-size:12px;color:var(--ink3);margin-top:2px">Todos los días hábiles del período están cargados. ¿Querés cerrarlo y validarlo?</div>
+      <div style="font-size:12px;color:var(--ink3);margin-top:2px">Todos los días del período están cargados. ¿Querés cerrarlo y liquidar?</div>
     </div>
     <button class="btn btn-primary btn-sm" onclick="cerrarMesManual()">Cerrar mes</button>
   </div>
   <div id="pcHero"></div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Auditorías realizadas
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="pcAuditorias"></div>
-        <button class="btn btn-outline btn-sm" style="width:100%;margin-top:4px" onclick="abrirNuevaAuditoria()">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          Nueva auditoría
-        </button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-          Sincronización
-        </div>
-      </div>
-      <div class="card-body">
-        <div id="pcSyncStatus" style="font-size:12px;color:var(--ink3)">Sin configurar</div>
-        <div class="pc-sync-row">
-          <button class="btn btn-sm btn-outline" style="margin-top:8px" onclick="sincronizarPeriodoConSheets()">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-            Sincronizar ahora
-          </button>
-          <button class="btn btn-sm" onclick="cargarPeriodoDesdeSheets(true)" style="margin-top:8px">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Bajar de Sheets
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div id="pcAuditorias" style="margin-top:16px"></div>
 </div>
 
 <!-- PANEL IMPORTAR -->
@@ -1450,7 +1413,69 @@ var avMap={};
 var CFG_KEY='vitagro_cfg_v4', HIST_KEY='vitagro_hist_v4';
 var PA_KEY = 'vitagro_periodo_activo_v1'; // período en curso
 
-// ── Período activo helpers ───────────────────────────────────
+// ── Normalizar jornada desde localStorage ───────────────────
+// JSON.parse convierte Date→string y puede dejar campos undefined.
+// Esta función garantiza que la jornada tenga todos los campos con tipos correctos.
+function normalizarJornada(j){
+  if(!j) return null;
+  // Restaurar Dates desde strings
+  if(j.entrada && !(j.entrada instanceof Date)) j.entrada = new Date(j.entrada);
+  if(j.salida  && !(j.salida  instanceof Date)) j.salida  = new Date(j.salida);
+  if(j.descansos){
+    j.descansos = j.descansos.map(function(d){
+      if(d.salida  && !(d.salida  instanceof Date)) d.salida  = new Date(d.salida);
+      if(d.regreso && !(d.regreso instanceof Date)) d.regreso = new Date(d.regreso);
+      d.duracion   = d.duracion   != null ? Number(d.duracion)   : 0;
+      d.sinRegreso = d.sinRegreso || false;
+      return d;
+    });
+  } else { j.descansos = []; }
+  // Garantizar numéricos
+  j.hsTrabajadas = Number(j.hsTrabajadas) || 0;
+  j.hsExtra      = Number(j.hsExtra)      || 0;
+  j.total        = Number(j.total)        || 0;
+  j.totalDescMin = Number(j.totalDescMin) || 0;
+  j.descDescMin  = Number(j.descDescMin)  || 0;
+  j.mult         = Number(j.mult)         || 1;
+  j.tipoDia      = j.tipoDia  || 'Normal';
+  j.turno        = j.turno    || {};
+  // Garantizar desglose completo
+  var dsg = j.desglose || {};
+  j.desglose = {
+    normDiurna:   Number(dsg.normDiurna)   || 0,
+    normNocturna: Number(dsg.normNocturna) || 0,
+    extraDiurna:  Number(dsg.extraDiurna)  || 0,
+    extraNocturna:Number(dsg.extraNocturna)|| 0,
+    hsSabado:     Number(dsg.hsSabado)     || 0,
+    hsDomingo:    Number(dsg.hsDomingo)    || 0,
+    hsFeriado:    Number(dsg.hsFeriado)    || 0
+  };
+  j._descuentos  = j._descuentos  || [];
+  j._notas       = j._notas       || '';
+  j._totalManual = j._totalManual || null;
+  return j;
+}
+
+function normalizarBloque(bloque){
+  if(!bloque) return bloque;
+  if(bloque.jornadas) bloque.jornadas = bloque.jornadas.map(normalizarJornada).filter(Boolean);
+  return bloque;
+}
+
+// ── Bloques semanales ────────────────────────────────────────
+var BLOQUES_KEY = 'vitagro_bloques_v1';
+
+function getBloques(){
+  try{ return JSON.parse(localStorage.getItem(BLOQUES_KEY)||'null'); }
+  catch(e){ return null; }
+}
+function saveBloques(b){
+  if(b) localStorage.setItem(BLOQUES_KEY, JSON.stringify(b));
+  else  localStorage.removeItem(BLOQUES_KEY);
+}
+function clearBloques(){
+  localStorage.removeItem(BLOQUES_KEY);
+}
 function getPeriodoActivo(){
   try{ return JSON.parse(localStorage.getItem(PA_KEY)||'null'); }
   catch(e){ return null; }
@@ -1667,7 +1692,11 @@ function getTipoDia(fecha){
   if(dow===6)return'Sabado';
   return'Normal';
 }
-function minEntre(a,b){return(b.getTime()-a.getTime())/60000;}
+function minEntre(a,b){
+  if(!(a instanceof Date)) a=new Date(a);
+  if(!(b instanceof Date)) b=new Date(b);
+  return(b.getTime()-a.getTime())/60000;
+}
 
 // ======== REDONDEO DE HORARIOS ========
 // Convierte "HH:MM" a minutos desde medianoche
@@ -1679,6 +1708,8 @@ function horaAMin(hhmm){
 // Diferencia en minutos entre hora real (Date) y hora oficial (string "HH:MM"),
 // considerando cruce de medianoche. Positivo = llegó tarde / salió antes.
 function diffMinutos(dtReal, horaOficial, esFin){
+  if(!(dtReal instanceof Date)) dtReal = new Date(dtReal);
+  if(isNaN(dtReal)) return 0;
   var minOficial = horaAMin(horaOficial);
   var minReal    = dtReal.getHours()*60 + dtReal.getMinutes();
   var diff       = minReal - minOficial;
@@ -1693,6 +1724,9 @@ function diffMinutos(dtReal, horaOficial, esFin){
 // y un flag indicando si se aplicó el redondeo de entrada.
 // modo: 'entrada' | 'salida'
 function aplicarRedondeoHorario(dtReal, horaOficial, modo){
+  // Garantizar que dtReal sea un objeto Date (puede llegar como string desde localStorage)
+  if(!(dtReal instanceof Date)) dtReal = new Date(dtReal);
+  if(isNaN(dtReal)) return { dt: dtReal, ajustado: false };
   var margen = parseInt(cfg('cfg_redondeo'),10) || 20;
   margen = Math.min(margen, 30); // límite duro: nunca más de 30 min
 
@@ -1735,6 +1769,9 @@ function aplicarRedondeoHorario(dtReal, horaOficial, modo){
 
 // Redondeo sin turno: al cuarto de hora más cercano
 function redondearAlCuarto(dt){
+  // Garantizar que dt sea un objeto Date
+  if(!(dt instanceof Date)) dt = new Date(dt);
+  if(isNaN(dt)) return dt;
   var min = dt.getHours()*60 + dt.getMinutes();
   var redondeado = Math.round(min/15)*15;
   var dt2 = new Date(dt);
@@ -1956,6 +1993,8 @@ function generarReporte(agrupado,saltadas,desde,hasta){
   // ── Acumular en el período activo ──────────────────────────
   var pa = getPeriodoActivo();
   if(pa){
+    // Normalizar nuevas jornadas antes de mergear
+    jornadas = jornadas.map(normalizarJornada).filter(Boolean);
     // Merge jornadas: reemplazar si ya existe (nombre+fecha), agregar si no
     (jornadas).forEach(function(jNueva){
       var idx = pa.jornadas.findIndex(function(j){ return j.nombre===jNueva.nombre && j.fecha===jNueva.fecha; });
@@ -1995,14 +2034,25 @@ function generarReporte(agrupado,saltadas,desde,hasta){
     sincronizarPeriodoConSheets();
   }
 
-  var periodoStr=fmtF(desde)+' al '+fmtF(hasta);
-  document.getElementById('reportePeriodo').textContent=periodoStr+(saltadas>0?' · '+saltadas+' duplicadas omitidas':'');
-  var tp=document.getElementById('topPeriodo');tp.style.display='';tp.textContent=periodoStr;
+  var pa2 = getPeriodoActivo();
+  var periodoStr = pa2 && pa2.nombre
+    ? pa2.nombre + (pa2.auditorias && pa2.auditorias.length > 1
+        ? ' · Bloque ' + pa2.auditorias.length
+        : '')
+    : fmtF(desde)+' al '+fmtF(hasta);
+  periodoStr += saltadas>0 ? ' · '+saltadas+' duplicadas omitidas' : '';
+  document.getElementById('reportePeriodo').textContent=periodoStr;
+  var tp=document.getElementById('topPeriodo');tp.style.display='';
+  tp.textContent=pa2&&pa2.nombre ? pa2.nombre : fmtF(desde)+' al '+fmtF(hasta);
 
-  var empC=Object.keys(resumen).length;
-  var totHs=jornadas.reduce(function(s,j){return s+j.hsTrabajadas;},0);
-  var totEx=jornadas.reduce(function(s,j){return s+j.hsExtra;},0);
-  var totP=jornadas.reduce(function(s,j){return s+j.total;},0);
+  // Usar el acumulado completo de datosGlobales (no solo el bloque nuevo)
+  var jornadasTotal = datosGlobales.jornadas;
+  var resumenTotal  = datosGlobales.resumen;
+
+  var empC   = resumenTotal.length;
+  var totHs  = jornadasTotal.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0);
+  var totEx  = jornadasTotal.reduce(function(s,j){return s+(j.hsExtra||0);},0);
+  var totP   = jornadasTotal.reduce(function(s,j){return s+(j.total||0);},0);
   document.getElementById('met_emp').textContent=empC;
   document.getElementById('met_hs').textContent=totHs.toFixed(1)+'h';
   document.getElementById('met_ex').textContent=totEx.toFixed(1)+'h';
@@ -2010,7 +2060,7 @@ function generarReporte(agrupado,saltadas,desde,hasta){
 
   var se=document.getElementById('fil_emp');se.innerHTML='<option value="">Todos los empleados</option>';
   var sp=document.getElementById('pdf_emp');sp.innerHTML='<option value="">Todos</option>';
-  Object.keys(resumen).sort().forEach(function(n){
+  resumenTotal.map(function(r){return r.nombre;}).sort().forEach(function(n){
     [se,sp].forEach(function(s){var o=document.createElement('option');o.value=n;o.textContent=n;s.appendChild(o);});
   });
 
@@ -2055,7 +2105,7 @@ function ini(n){return(n||'??').split(' ').map(function(p){return p[0]||'';}).jo
 function bSec(s){var m={Planta:'badge-planta',Comercial:'badge-comercial','Sin sector':'badge-sin'};return'<span class="badge '+(m[s]||'badge-sin')+'">'+s+'</span>';}
 function bTurno(t){if(!t)return'';var m={manana:'badge-manana',tarde:'badge-tarde',noche:'badge-noche',diurno:'badge-diurno'};var l={manana:'Mañana',tarde:'Tarde',noche:'Noche',diurno:'08-16'};return'<span class="badge '+(m[t.tipo]||'badge-diurno')+'">'+(l[t.tipo]||t.label)+'</span>';}
 function bDia(tipo,mult){if(mult===2){if(tipo==='Sabado')return'<span class="badge badge-doble">Sáb. ×2</span>';if(tipo==='Feriado')return'<span class="badge badge-doble">Feriado</span>';if(tipo==='Domingo')return'<span class="badge badge-doble">Domingo</span>';}if(tipo==='Sabado')return'<span class="badge badge-sabado">Sábado</span>';return'<span class="badge badge-normal">Normal</span>';}
-function fmtH(dt){if(!dt)return'-';return dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');}
+function fmtH(dt){if(!dt)return'-';if(!(dt instanceof Date))dt=new Date(dt);if(isNaN(dt))return'-';return dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');}
 function fmtF(s){if(!s)return'-';var p=s.split('-');return p[2]+'/'+p[1]+'/'+p[0];}
 function pesos(n){return'$'+Math.round(n).toLocaleString('es-AR');}
 function goPanel(id,el){
@@ -3899,20 +3949,13 @@ function sugerirRangoSiguienteAuditoria(pa){
   }
 }
 
-function setRangoDesde(iso){ /* set the dpicker values */
-  window._sugeridoDesde = iso;
-  var p=iso.split('-');
-  var el=document.getElementById('selDesdeDia');  if(el) el.value=parseInt(p[2],10);
-  var em=document.getElementById('selDesdeMes');  if(em) em.value=parseInt(p[1],10);
-  var ea=document.getElementById('selDesdeAnio'); if(ea) ea.value=p[0];
-  actualizarDesde&&actualizarDesde();
+function setRangoDesde(iso){
+  dpSetISO('Desde', iso);
+  updateRangoInfo();
 }
 function setRangoHasta(iso){
-  var p=iso.split('-');
-  var el=document.getElementById('selHastaDia');  if(el) el.value=parseInt(p[2],10);
-  var em=document.getElementById('selHastaMes');  if(em) em.value=parseInt(p[1],10);
-  var ea=document.getElementById('selHastaAnio'); if(ea) ea.value=p[0];
-  actualizarHasta&&actualizarHasta();
+  dpSetISO('Hasta', iso);
+  updateRangoInfo();
 }
 
 function confirmarNuevoPeriodo(){
@@ -3943,7 +3986,6 @@ function renderPeriodoActivo(){
   var pa = getPeriodoActivo();
   var hero = document.getElementById('pcHero');
   var audDiv = document.getElementById('pcAuditorias');
-  var syncDiv = document.getElementById('pcSyncStatus');
   var alertDiv = document.getElementById('pcCompleteAlert');
   if(!hero) return;
 
@@ -3952,34 +3994,38 @@ function renderPeriodoActivo(){
       '<div class="empty-state" style="padding:40px 24px">'
       +'<div class="empty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--g4)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div>'
       +'<h3 style="font-size:15px;font-weight:700;color:var(--ink3);margin-bottom:6px">Sin período activo</h3>'
-      +'<p style="font-size:13px;color:var(--ink4);margin-bottom:16px">Iniciá una nueva auditoría para comenzar a cargar el mes.</p>'
+      +'<p style="font-size:13px;color:var(--ink4);margin-bottom:16px">Iniciá una nueva carga para comenzar a acumular el mes.</p>'
       +'<button class="btn btn-primary" onclick="abrirNuevaAuditoria()">'
       +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
-      +'Nueva auditoría</button></div>';
-    if(audDiv) audDiv.innerHTML = '<div style="font-size:12px;color:var(--ink4);padding:8px 0">Sin auditorías aún.</div>';
+      +' Cargar primera semana</button></div>';
+    if(audDiv) audDiv.innerHTML = '';
     if(alertDiv) alertDiv.style.display = 'none';
-    // Update nav badge
-    document.getElementById('badgePeriodo').style.display='none';
+    var badge=document.getElementById('badgePeriodo');
+    if(badge) badge.style.display='none';
     return;
   }
+
+  // Normalizar jornadas al renderizar (restaurar tipos desde JSON)
+  pa.jornadas = (pa.jornadas||[]).map(normalizarJornada).filter(Boolean);
 
   // Calcular progreso
   var diasHab = diasHabilesDelMes(pa.mes);
   var jornadasUnicas = {};
-  (pa.jornadas||[]).forEach(function(j){ jornadasUnicas[j.nombre+'|'+j.fecha]=1; });
+  pa.jornadas.forEach(function(j){ jornadasUnicas[j.nombre+'|'+j.fecha]=1; });
   var diasCargados = Object.keys(jornadasUnicas).length;
   var pct = Math.min(100, Math.round(diasCargados/Math.max(diasHab,1)*100));
 
-  var totHs  = (pa.jornadas||[]).reduce(function(s,j){return s+j.hsTrabajadas;},0);
-  var totEx  = (pa.jornadas||[]).reduce(function(s,j){return s+j.hsExtra;},0);
-  var totP   = (pa.jornadas||[]).reduce(function(s,j){return s+j.total;},0);
-  var totEmp = (pa.resumen||[]).length;
+  var totHs  = pa.jornadas.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0);
+  var totEx  = pa.jornadas.reduce(function(s,j){return s+(j.hsExtra||0);},0);
+  var totP   = pa.jornadas.reduce(function(s,j){return s+(j.total||0);},0);
+  var totEmp = (pa.resumen||[]).length || new Set(pa.jornadas.map(function(j){return j.nombre;})).size;
+  var nAud   = (pa.auditorias||[]).length;
 
   hero.innerHTML =
     '<div class="pc-hero">'
     +'<div class="pc-hero-title">Período activo</div>'
     +'<div class="pc-hero-nombre">'+pa.nombre+'</div>'
-    +'<div class="pc-hero-sub">'+(pa.mes||'')+(pa.auditorias&&pa.auditorias.length?' · '+pa.auditorias.length+' auditoría'+(pa.auditorias.length!==1?'s':''):'')+'</div>'
+    +'<div class="pc-hero-sub">'+(pa.mes||'')+' · '+nAud+' bloque'+(nAud!==1?'s':'')+' cargado'+(nAud!==1?'s':'')+'</div>'
     +'<div class="pc-progress-wrap">'
     +'<div class="pc-progress-label"><span>Progreso del mes</span><span>'+diasCargados+' jornadas cargadas / ~'+diasHab+' días hábiles</span></div>'
     +'<div class="pc-progress-bar"><div class="pc-progress-fill" style="width:'+pct+'%"></div></div>'
@@ -3992,42 +4038,37 @@ function renderPeriodoActivo(){
     +'</div>'
     +'</div>';
 
-  // Auditorías
+  // Bloques cargados
   if(audDiv){
-    if(!pa.auditorias||!pa.auditorias.length){
-      audDiv.innerHTML='<div style="font-size:12px;color:var(--ink4);padding:4px 0">Sin auditorías aún. Importá el primer tramo del log.</div>';
+    if(!nAud){
+      audDiv.innerHTML='<div class="card"><div class="card-body" style="color:var(--ink4);font-size:12px;text-align:center;padding:20px">Sin bloques cargados aún. Importá el primer tramo del log.</div></div>';
     } else {
-      audDiv.innerHTML = '<div class="pc-auditoria-list">'
-        + pa.auditorias.map(function(a,ai){
-          return '<div class="pc-auditoria-item">'
-            +'<div class="pc-aud-dot"></div>'
-            +'<div>'
-              +'<div class="pc-aud-fecha">Auditoría '+(ai+1)+' · '+a.fechaImport+'</div>'
-              +'<div class="pc-aud-rango">'+fmtF(a.desde)+' al '+fmtF(a.hasta)+'</div>'
-            +'</div>'
-            +'<div class="pc-aud-marc">+'+a.marcaciones+' marcaciones</div>'
-            +'<button class="pc-aud-del" onclick="eliminarAuditoria('+ai+')" title="Eliminar esta auditoría">'
-            +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
-            +'</button>'
-            +'</div>';
-        }).join('') + '</div>';
+      var html2 = '<div class="card"><div class="card-header"><div class="card-title">'
+        +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
+        +' Bloques cargados</div></div><div class="card-body"><div class="pc-auditoria-list">';
+      pa.auditorias.forEach(function(a,ai){
+        html2 += '<div class="pc-auditoria-item">'
+          +'<div class="pc-aud-dot"></div>'
+          +'<div style="flex:1"><div class="pc-aud-fecha">Bloque '+(ai+1)+' · '+a.fechaImport+'</div>'
+          +'<div class="pc-aud-rango">'+fmtF(a.desde)+' al '+fmtF(a.hasta)+'</div></div>'
+          +'<div class="pc-aud-marc">'+a.marcaciones+' marcaciones</div>'
+          +'<button class="pc-aud-del" onclick="eliminarBloque('+ai+')" title="Eliminar este bloque">'
+          +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
+          +'</button></div>';
+      });
+      html2 += '</div><button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="abrirNuevaAuditoria()">'
+        +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
+        +' Cargar próxima semana</button></div></div>';
+      audDiv.innerHTML = html2;
     }
   }
 
-  // Sync status
-  if(syncDiv){
-    var url = cfg('cfg_gscript').trim();
-    if(!url) syncDiv.innerHTML='<span style="color:var(--ink4)">Google Sheets no configurado. Configurá la URL en Configuración.</span>';
-    else if(pa.ultimaSync) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Última sync: '+new Date(pa.ultimaSync).toLocaleString('es-AR')+'</span>';
-    else syncDiv.innerHTML='<span style="color:var(--orange)">Pendiente de sincronizar con Sheets</span>';
-  }
-
-  // Alerta de mes completo (pct >= 95%)
+  // Alerta mes completo
   if(alertDiv) alertDiv.style.display = (pct >= 95 ? '' : 'none');
 
   // Badge nav
   var badge = document.getElementById('badgePeriodo');
-  if(badge){ badge.style.display=''; badge.textContent=pa.auditorias?pa.auditorias.length:0; }
+  if(badge){ badge.style.display = nAud ? '' : 'none'; badge.textContent = nAud; }
 
   // Cargar en datosGlobales para que el reporte funcione
   cargarPeriodoEnDatosGlobales(pa);
@@ -4035,6 +4076,8 @@ function renderPeriodoActivo(){
 
 function cargarPeriodoEnDatosGlobales(pa){
   if(!pa||!pa.jornadas||!pa.jornadas.length) return;
+  // Normalizar todas las jornadas (restaurar tipos desde JSON/localStorage)
+  pa.jornadas = pa.jornadas.map(normalizarJornada).filter(Boolean);
   datosGlobales = {
     jornadas:   pa.jornadas,
     descansos:  pa.descansos||[],
@@ -4048,25 +4091,36 @@ function cargarPeriodoEnDatosGlobales(pa){
   if(navR){navR.style.opacity='';navR.style.pointerEvents='';}
   var navCal=document.getElementById('nav-calendario');
   if(navCal){navCal.style.opacity='';navCal.style.pointerEvents='';}
-  // Sync selects
-  var empC = (pa.resumen||[]).length;
-  var totHs=(pa.jornadas||[]).reduce(function(s,j){return s+j.hsTrabajadas;},0);
-  var totEx=(pa.jornadas||[]).reduce(function(s,j){return s+j.hsExtra;},0);
-  var totP =(pa.jornadas||[]).reduce(function(s,j){return s+j.total;},0);
+  // Update metrics using normalized jornadas
+  var jNorm = datosGlobales.jornadas; // already normalized above
+  var empC  = (pa.resumen||[]).length || new Set(jNorm.map(function(j){return j.nombre;})).size;
+  var totHs = jNorm.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0);
+  var totEx = jNorm.reduce(function(s,j){return s+(j.hsExtra||0);},0);
+  var totP  = jNorm.reduce(function(s,j){return s+(j.total||0);},0);
   var el=document.getElementById('met_emp'); if(el) el.textContent=empC;
   var hs=document.getElementById('met_hs');  if(hs) hs.textContent=totHs.toFixed(1)+'h';
   var ex=document.getElementById('met_ex');  if(ex) ex.textContent=totEx.toFixed(1)+'h';
   var tt=document.getElementById('met_tot'); if(tt) tt.textContent='$'+Math.round(totP).toLocaleString('es-AR');
+  // Update reportePeriodo label
+  var rp=document.getElementById('reportePeriodo');
+  if(rp && pa.nombre) rp.textContent = pa.nombre;
+  var tpp=document.getElementById('topPeriodo');
+  if(tpp && pa.nombre){tpp.style.display='';tpp.textContent=pa.nombre;}
   var se=document.getElementById('fil_emp');
   var sp=document.getElementById('pdf_emp');
   if(se){ se.innerHTML='<option value="">Todos los empleados</option>'; }
   if(sp){ sp.innerHTML='<option value="">Todos</option>'; }
-  (pa.resumen||[]).map(function(r){return r.nombre;}).sort().forEach(function(n){
+  var nombresUnicos = [...new Set(jNorm.map(function(j){return j.nombre;}))].sort();
+  nombresUnicos.forEach(function(n){
     if(se){var o=document.createElement('option');o.value=n;o.textContent=n;se.appendChild(o);}
     if(sp){var o2=document.createElement('option');o2.value=n;o2.textContent=n;sp.appendChild(o2);}
   });
   actualizarBadgeDesc();
+  // Render the report with the loaded data
+  renderReportes();
 }
+
+function eliminarBloque(idx){ eliminarAuditoria(idx); }
 
 function eliminarAuditoria(idx){
   if(!confirm('¿Eliminar la auditoría '+(idx+1)+'? Las marcaciones de ese tramo se quitarán del período.')) return;
