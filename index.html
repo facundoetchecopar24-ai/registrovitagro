@@ -3952,54 +3952,96 @@ function confirmarBloqueAlPeriodo(){
     pa = {
       nombre: MESES_L[hoy.getMonth()]+' '+hoy.getFullYear(),
       mes: hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0'),
-      auditorias:[], jornadas:[], descansos:[], descolgadas:[], resumen:[],
+      auditorias:[], bloques:[], descansos:[], descolgadas:[], resumen:[],
       creadoEl: hoy.toISOString(), ultimaSync: null
     };
   }
 
-  // Normalizar jornadas del bloque actual
-  var jornadasBloque = datosGlobales.jornadas.map(normalizarJornada).filter(Boolean);
+  // Asegurar que pa.bloques exista (migración desde versión anterior)
+  pa.bloques = pa.bloques || [];
+
   var desde = datosGlobales._desde || '';
   var hasta  = datosGlobales._hasta  || '';
 
-  // Merge jornadas al período: reemplazar si existe (nombre+fecha), agregar si no
-  jornadasBloque.forEach(function(jNueva){
-    var idx = pa.jornadas.findIndex(function(j){ return j.nombre===jNueva.nombre && j.fecha===jNueva.fecha; });
-    if(idx>=0) pa.jornadas[idx] = jNueva;
-    else       pa.jornadas.push(jNueva);
-  });
+  // ── Guardar snapshot completo de este bloque ──────────────
+  // Cada bloque guarda sus propias jornadas, descansos y resumen.
+  // El acumulado se reconstruye desde todos los snapshots — nunca se pierde nada.
+  var jornadasBloque = datosGlobales.jornadas.map(normalizarJornada).filter(Boolean);
+  var resumenBloque  = reconstruirResumenDesdejornadas(jornadasBloque);
 
-  // Merge descansos
-  (datosGlobales.descansos||[]).forEach(function(dNuevo){
-    var idx = (pa.descansos||[]).findIndex(function(d){
-      return d.nombre===dNuevo.nombre && d.fecha===dNuevo.fecha && String(d.salida)===String(dNuevo.salida);
+  var snapshot = {
+    num:          pa.bloques.length + 1,
+    fechaImport:  new Date().toLocaleDateString('es-AR'),
+    desde:        desde,
+    hasta:        hasta,
+    jornadas:     jornadasBloque,
+    descansos:    (datosGlobales.descansos||[]),
+    descolgadas:  (datosGlobales.descolgadas||[]),
+    resumen:      resumenBloque,
+    totales: {
+      empleados:   resumenBloque.length,
+      jornadas:    jornadasBloque.length,
+      horas:       parseFloat(jornadasBloque.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0).toFixed(2)),
+      extra:       parseFloat(jornadasBloque.reduce(function(s,j){return s+(j.hsExtra||0);},0).toFixed(2)),
+      total:       Math.round(jornadasBloque.reduce(function(s,j){return s+(j.total||0);},0))
+    }
+  };
+  pa.bloques.push(snapshot);
+
+  // ── Reconstruir el acumulado desde TODOS los bloques ─────
+  // Así el bloque 2 no pisa al bloque 1 — cada uno vive en su snapshot.
+  var todasJornadas = [];
+  var todosDescansos = [];
+  var todasDescolgadas = [];
+
+  pa.bloques.forEach(function(bloque){
+    (bloque.jornadas||[]).forEach(function(jBloque){
+      // Si la misma jornada (nombre+fecha) aparece en un bloque posterior,
+      // la versión más reciente (del bloque con mayor num) tiene prioridad.
+      var idx = todasJornadas.findIndex(function(j){
+        return j.nombre===jBloque.nombre && j.fecha===jBloque.fecha;
+      });
+      if(idx>=0) todasJornadas[idx] = jBloque; // reemplaza con la versión más reciente
+      else       todasJornadas.push(jBloque);
     });
-    if(idx<0)(pa.descansos=pa.descansos||[]).push(dNuevo);
+    (bloque.descansos||[]).forEach(function(d){
+      var idx = todosDescansos.findIndex(function(dd){
+        return dd.nombre===d.nombre && dd.fecha===d.fecha && String(dd.salida)===String(d.salida);
+      });
+      if(idx<0) todosDescansos.push(d);
+    });
+    (bloque.descolgadas||[]).forEach(function(desc){
+      var idx = todasDescolgadas.findIndex(function(d){
+        return d.nombre===desc.nombre && d.fecha===desc.fecha;
+      });
+      if(idx<0) todasDescolgadas.push(desc);
+    });
   });
 
-  // Merge descolgadas (solo las excluidas o resueltas, no las aún pendientes)
-  (datosGlobales.descolgadas||[]).forEach(function(desc){
-    var idx=(pa.descolgadas||[]).findIndex(function(d){return d.nombre===desc.nombre&&d.fecha===desc.fecha;});
-    if(idx<0)(pa.descolgadas=pa.descolgadas||[]).push(desc);
+  // Reconstruir resumen acumulado desde todas las jornadas
+  var resumenAcumulado = reconstruirResumenDesdejornadas(todasJornadas);
+
+  // Guardar en pa (mantener pa.jornadas como el acumulado para compatibilidad)
+  pa.jornadas    = todasJornadas.map(normalizarJornada).filter(Boolean);
+  pa.descansos   = todosDescansos;
+  pa.descolgadas = todasDescolgadas;
+  pa.resumen     = resumenAcumulado;
+
+  // Mantener pa.auditorias sincronizado (resumen liviano por bloque para el panel)
+  pa.auditorias = pa.bloques.map(function(b){
+    return {
+      fechaImport: b.fechaImport,
+      desde:       b.desde,
+      hasta:       b.hasta,
+      marcaciones: (b.jornadas||[]).length,
+      totales:     b.totales
+    };
   });
 
-  // Reconstruir resumen acumulado
-  pa.resumen = reconstruirResumenDesdejornadas(pa.jornadas);
-
-  // Registrar este bloque
-  pa.auditorias = pa.auditorias||[];
-  pa.auditorias.push({
-    fechaImport: new Date().toLocaleDateString('es-AR'),
-    desde: desde,
-    hasta: hasta,
-    marcaciones: jornadasBloque.length,
-    pendientesResueltas: (datosGlobales.descolgadas||[]).filter(function(d){return d.excluida;}).length
-  });
   pa.ultimaSync = null;
   savePeriodoActivo(pa);
 
   // Actualizar datosGlobales con el acumulado completo
-  pa.jornadas = pa.jornadas.map(normalizarJornada).filter(Boolean);
   datosGlobales.jornadas    = pa.jornadas;
   datosGlobales.descansos   = pa.descansos;
   datosGlobales.resumen     = pa.resumen;
@@ -4007,26 +4049,35 @@ function confirmarBloqueAlPeriodo(){
   datosGlobales._desde      = pa.mes ? pa.mes+'-01' : desde;
   datosGlobales._hasta      = pa.mes ? pa.mes+'-31' : hasta;
 
-  // Limpiar bloque temporal
-  window._bloqueActual = null;
+  // Actualizar métricas y reporte con el acumulado
+  var totHs = pa.jornadas.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0);
+  var totEx = pa.jornadas.reduce(function(s,j){return s+(j.hsExtra||0);},0);
+  var totP  = pa.jornadas.reduce(function(s,j){return s+(j.total||0);},0);
+  var el=document.getElementById('met_emp'); if(el) el.textContent=resumenAcumulado.length;
+  var hs=document.getElementById('met_hs');  if(hs) hs.textContent=totHs.toFixed(1)+'h';
+  var ex=document.getElementById('met_ex');  if(ex) ex.textContent=totEx.toFixed(1)+'h';
+  var tt=document.getElementById('met_tot'); if(tt) tt.textContent='$'+Math.round(totP).toLocaleString('es-AR');
+  var rp=document.getElementById('reportePeriodo'); if(rp) rp.textContent=pa.nombre;
 
-  // Ocultar botón confirmar (ya confirmado)
+  // Limpiar bloque temporal y ocultar botón confirmar
+  window._bloqueActual = null;
   var btnC = document.getElementById('btnConfirmarBloque');
   if(btnC) btnC.style.display = 'none';
 
   cerrarModalConfirmarBloque();
   renderPeriodoActivo();
+  renderReportes();
   sincronizarPeriodoConSheets();
 
   // Toast
   var t = document.createElement('div');
   t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--g3);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:8px;transition:opacity .4s';
   t.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Bloque '
-    +pa.auditorias.length+' confirmado y sumado al período "'+pa.nombre+'"';
+    +snapshot.num+' confirmado — acumulado: $'+Math.round(totP).toLocaleString('es-AR');
   document.body.appendChild(t);
   setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },400); }, 3500);
 
-  // Navegar al período en curso para ver el progreso
+  // Navegar al período en curso para ver el progreso acumulado
   goPanel('panelPeriodo', document.getElementById('nav-periodo'));
 }
 
@@ -4189,8 +4240,11 @@ function renderPeriodoActivo(){
         html2 += '<div class="pc-auditoria-item">'
           +'<div class="pc-aud-dot"></div>'
           +'<div style="flex:1"><div class="pc-aud-fecha">Bloque '+(ai+1)+' · '+a.fechaImport+'</div>'
-          +'<div class="pc-aud-rango">'+fmtF(a.desde)+' al '+fmtF(a.hasta)+'</div></div>'
-          +'<div class="pc-aud-marc">'+a.marcaciones+' marcaciones</div>'
+          +'<div class="pc-aud-rango">'+fmtF(a.desde)+' al '+fmtF(a.hasta)+'</div>'
+          +(a.totales?'<div style="font-size:10px;color:var(--ink3);margin-top:2px">'
+            +a.totales.jornadas+' jornadas · '+a.totales.horas.toFixed(1)+'h · $'+Math.round(a.totales.total).toLocaleString('es-AR')
+            +'</div>':'')
+          +'</div>'
           +'<button class="pc-aud-del" onclick="eliminarBloque('+ai+')" title="Eliminar este bloque">'
           +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>'
           +'</button></div>';
@@ -4215,6 +4269,22 @@ function renderPeriodoActivo(){
 
 function cargarPeriodoEnDatosGlobales(pa){
   if(!pa||!pa.jornadas||!pa.jornadas.length) return;
+  // Migrar formato antiguo: si no tiene bloques, crear uno con todas las jornadas
+  if(!pa.bloques || !pa.bloques.length){
+    pa.bloques = [{
+      num:1, fechaImport: pa.creadoEl ? new Date(pa.creadoEl).toLocaleDateString('es-AR') : '',
+      desde: pa._desde||'', hasta: pa._hasta||'',
+      jornadas: pa.jornadas, descansos: pa.descansos||[], descolgadas: pa.descolgadas||[],
+      resumen: pa.resumen||[],
+      totales:{
+        empleados:(pa.resumen||[]).length, jornadas:(pa.jornadas||[]).length,
+        horas:parseFloat((pa.jornadas||[]).reduce(function(s,j){return s+(j.hsTrabajadas||0);},0).toFixed(2)),
+        extra:parseFloat((pa.jornadas||[]).reduce(function(s,j){return s+(j.hsExtra||0);},0).toFixed(2)),
+        total:Math.round((pa.jornadas||[]).reduce(function(s,j){return s+(j.total||0);},0))
+      }
+    }];
+    savePeriodoActivo(pa);
+  }
   // Normalizar todas las jornadas (restaurar tipos desde JSON/localStorage)
   pa.jornadas = pa.jornadas.map(normalizarJornada).filter(Boolean);
   datosGlobales = {
@@ -4262,32 +4332,64 @@ function cargarPeriodoEnDatosGlobales(pa){
 function eliminarBloque(idx){ eliminarAuditoria(idx); }
 
 function eliminarAuditoria(idx){
-  if(!confirm('¿Eliminar la auditoría '+(idx+1)+'? Las marcaciones de ese tramo se quitarán del período.')) return;
+  if(!confirm('¿Eliminar el bloque '+(idx+1)+'? Las jornadas de ese tramo se quitarán del período acumulado.')) return;
   var pa = getPeriodoActivo();
   if(!pa) return;
-  var aud = pa.auditorias[idx];
-  // Filtrar jornadas y descansos del rango de esa auditoría
-  pa.jornadas = (pa.jornadas||[]).filter(function(j){
-    return j.fecha < aud.desde || j.fecha > aud.hasta;
-  });
-  pa.descansos = (pa.descansos||[]).filter(function(d){
-    return d.fecha < aud.desde || d.fecha > aud.hasta;
-  });
-  // Eliminar marcaciones del hist antiduplicados para ese rango
+
+  // Eliminar el snapshot del bloque
+  pa.bloques = pa.bloques || [];
+  if(idx < 0 || idx >= pa.bloques.length) return;
+  var aud = pa.bloques[idx];
+
+  // Eliminar marcaciones antiduplicados del rango de ese bloque
   var hist = getHist();
   var nuevaHist = new Set([...hist].filter(function(k){
-    // key format: enNo|fecha|hora
     var parts = k.split('|');
     var fecha = parts[1]||'';
     return fecha < aud.desde || fecha > aud.hasta;
   }));
   saveHist(nuevaHist);
-  pa.auditorias.splice(idx,1);
-  // Reconstruir resumen desde jornadas restantes
-  pa.resumen = reconstruirResumenDesdejornadas(pa.jornadas);
+
+  // Eliminar el bloque del array
+  pa.bloques.splice(idx, 1);
+
+  // Reconstruir el acumulado desde los bloques restantes
+  var todasJornadas = [], todosDescansos = [], todasDescolgadas = [];
+  pa.bloques.forEach(function(bloque){
+    (bloque.jornadas||[]).forEach(function(j){
+      var i2 = todasJornadas.findIndex(function(jj){ return jj.nombre===j.nombre && jj.fecha===j.fecha; });
+      if(i2>=0) todasJornadas[i2]=j; else todasJornadas.push(j);
+    });
+    (bloque.descansos||[]).forEach(function(d){
+      var i2 = todosDescansos.findIndex(function(dd){ return dd.nombre===d.nombre && dd.fecha===d.fecha && String(dd.salida)===String(d.salida); });
+      if(i2<0) todosDescansos.push(d);
+    });
+    (bloque.descolgadas||[]).forEach(function(desc){
+      var i2 = todasDescolgadas.findIndex(function(d){ return d.nombre===desc.nombre && d.fecha===desc.fecha; });
+      if(i2<0) todasDescolgadas.push(desc);
+    });
+  });
+
+  pa.jornadas    = todasJornadas.map(normalizarJornada).filter(Boolean);
+  pa.descansos   = todosDescansos;
+  pa.descolgadas = todasDescolgadas;
+  pa.resumen     = reconstruirResumenDesdejornadas(pa.jornadas);
+  pa.auditorias  = pa.bloques.map(function(b,bi){
+    return { fechaImport:b.fechaImport, desde:b.desde, hasta:b.hasta, marcaciones:(b.jornadas||[]).length, totales:b.totales };
+  });
+
   savePeriodoActivo(pa);
+
+  // Actualizar datosGlobales
+  datosGlobales = datosGlobales || {};
+  datosGlobales.jornadas    = pa.jornadas;
+  datosGlobales.descansos   = pa.descansos;
+  datosGlobales.resumen     = pa.resumen;
+  datosGlobales.descolgadas = pa.descolgadas;
+
   renderPeriodoActivo();
   renderReportes();
+  recalcularResumen();
 }
 
 function reconstruirResumenDesdejornadas(jornadas){
