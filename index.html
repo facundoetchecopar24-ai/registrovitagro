@@ -896,6 +896,10 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         Generar PDF
       </button>
+      <button class="btn btn-primary btn-sm" id="btnConfirmarBloque" onclick="abrirModalConfirmarBloque()" style="background:linear-gradient(135deg,#1a3d2b,#245c3a);border-color:#1a3d2b;display:none" title="Cerrar este bloque de jornadas y sumarlo al período en curso">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Confirmar bloque →
+      </button>
       <button class="btn btn-sm" onclick="abrirModalValidar()" style="background:var(--jb);color:#fff;border-color:var(--jb)" title="Guardar este período en el historial anual">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         Validar período
@@ -1327,6 +1331,31 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
       <button class="btn btn-primary" onclick="guardarEdicionJornada()">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
         Guardar y recalcular
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CONFIRMAR BLOQUE -->
+<div class="modal-overlay" id="modalConfirmarBloque">
+  <div class="modal" style="width:480px;max-width:96vw">
+    <div class="modal-title">Confirmar bloque y agregar al período</div>
+    <div class="modal-sub">Revisaste y corregiste las jornadas. Este bloque se sumará al período en curso.</div>
+    <div id="cbResumen" style="background:var(--g10);border:1.5px solid var(--g8);border-radius:var(--r);padding:16px 18px;margin-bottom:16px"></div>
+    <div id="cbPendWarn" style="display:none" class="alert alert-warn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <span id="cbPendWarnTxt"></span>
+    </div>
+    <div id="cbNoPeriodo" style="display:none" class="alert alert-warn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      No hay un período activo definido. El bloque se confirmará pero no se sumará a ningún período.
+      <button class="btn btn-sm btn-outline" style="margin-left:8px" onclick="cerrarModalConfirmarBloque();abrirNuevaAuditoria()">Crear período primero</button>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="cerrarModalConfirmarBloque()">Cancelar — seguir revisando</button>
+      <button class="btn btn-primary" onclick="confirmarBloqueAlPeriodo()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Confirmar y sumar al período
       </button>
     </div>
   </div>
@@ -1990,49 +2019,8 @@ function generarReporte(agrupado,saltadas,desde,hasta){
 
   datosGlobales={jornadas:jornadas,descansos:todosDescansos,resumen:Object.values(resumen),descolgadas:descolgadas,_desde:desde,_hasta:hasta};
 
-  // ── Acumular en el período activo ──────────────────────────
-  var pa = getPeriodoActivo();
-  if(pa){
-    // Normalizar nuevas jornadas antes de mergear
-    jornadas = jornadas.map(normalizarJornada).filter(Boolean);
-    // Merge jornadas: reemplazar si ya existe (nombre+fecha), agregar si no
-    (jornadas).forEach(function(jNueva){
-      var idx = pa.jornadas.findIndex(function(j){ return j.nombre===jNueva.nombre && j.fecha===jNueva.fecha; });
-      if(idx>=0) pa.jornadas[idx]=jNueva;
-      else        pa.jornadas.push(jNueva);
-    });
-    // Merge descansos igual
-    (todosDescansos).forEach(function(dNuevo){
-      var idx = (pa.descansos||[]).findIndex(function(d){ return d.nombre===dNuevo.nombre && d.fecha===dNuevo.fecha && String(d.salida)===String(dNuevo.salida); });
-      if(idx<0)(pa.descansos=pa.descansos||[]).push(dNuevo);
-    });
-    // Merge descolgadas
-    (descolgadas).forEach(function(desc){
-      var idx=(pa.descolgadas||[]).findIndex(function(d){return d.nombre===desc.nombre&&d.fecha===desc.fecha;});
-      if(idx<0)(pa.descolgadas=pa.descolgadas||[]).push(desc);
-    });
-    // Reconstruir resumen completo
-    pa.resumen = reconstruirResumenDesdejornadas(pa.jornadas);
-    // Registrar auditoría
-    pa.auditorias = pa.auditorias||[];
-    pa.auditorias.push({
-      fechaImport: new Date().toLocaleDateString('es-AR'),
-      desde: desde, hasta: hasta,
-      marcaciones: jornadas.length + saltadas
-    });
-    pa.ultimaSync = null; // marcar como pendiente de sync
-    savePeriodoActivo(pa);
-    // Actualizar datosGlobales con el acumulado completo
-    datosGlobales.jornadas   = pa.jornadas;
-    datosGlobales.descansos  = pa.descansos;
-    datosGlobales.resumen    = pa.resumen;
-    datosGlobales.descolgadas= pa.descolgadas;
-    datosGlobales._desde     = pa.mes ? pa.mes+'-01' : desde;
-    datosGlobales._hasta     = pa.mes ? pa.mes+'-31' : hasta;
-    renderPeriodoActivo();
-    // Auto-sync en background
-    sincronizarPeriodoConSheets();
-  }
+  // Guardar el bloque actual como "pendiente de confirmar" (no se acumula hasta que el usuario confirme)
+  window._bloqueActual = { jornadas:jornadas, descansos:todosDescansos, descolgadas:descolgadas, desde:desde, hasta:hasta, marcaciones:jornadas.length+saltadas };
 
   var pa2 = getPeriodoActivo();
   var periodoStr = pa2 && pa2.nombre
@@ -2088,6 +2076,8 @@ function generarReporte(agrupado,saltadas,desde,hasta){
   initCalendario();
   goPanel('panelReporte',navR);
   renderReportes();
+  // Mostrar botón "Confirmar bloque" — el usuario revisa primero y confirma cuando esté listo
+  mostrarBotonConfirmar();
 }
 
 // ======== HELPERS ========
@@ -3891,6 +3881,155 @@ function cargarHistorialDesdeSheets(manual){
     });
 }
 
+// ======== CONFIRMAR BLOQUE AL PERÍODO ========
+
+function mostrarBotonConfirmar(){
+  var btn = document.getElementById('btnConfirmarBloque');
+  if(btn) btn.style.display = '';
+}
+
+function abrirModalConfirmarBloque(){
+  if(!datosGlobales || !datosGlobales.jornadas || !datosGlobales.jornadas.length){
+    alert('No hay jornadas cargadas para confirmar.');
+    return;
+  }
+  var bloque = window._bloqueActual || {};
+  var jornadas = datosGlobales.jornadas;
+  var desde    = datosGlobales._desde || bloque.desde || '';
+  var hasta    = datosGlobales._hasta || bloque.hasta || '';
+
+  // Contar pendientes sin resolver
+  var pendSinResolver = (datosGlobales.descolgadas||[]).filter(function(d){ return !d.excluida; }).length;
+
+  // Calcular resumen del bloque
+  var totHs = jornadas.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0);
+  var totEx = jornadas.reduce(function(s,j){return s+(j.hsExtra||0);},0);
+  var totP  = jornadas.reduce(function(s,j){return s+(j.total||0);},0);
+  var emps  = new Set(jornadas.map(function(j){return j.nombre;})).size;
+
+  document.getElementById('cbResumen').innerHTML =
+    '<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--g4);margin-bottom:10px">Resumen del bloque a confirmar</div>'
+    +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'
+    +'<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--ink)">'+emps+'</div><div style="font-size:10px;color:var(--ink3);margin-top:2px">Empleados</div></div>'
+    +'<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--ink)">'+jornadas.length+'</div><div style="font-size:10px;color:var(--ink3);margin-top:2px">Jornadas</div></div>'
+    +'<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--ink)">'+totHs.toFixed(1)+'h</div><div style="font-size:10px;color:var(--ink3);margin-top:2px">Hs trabajadas</div></div>'
+    +'<div style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--g2)">$'+Math.round(totP).toLocaleString('es-AR')+'</div><div style="font-size:10px;color:var(--ink3);margin-top:2px">Total acumulado</div></div>'
+    +'</div>'
+    +(desde?'<div style="margin-top:12px;font-size:11px;color:var(--ink3)">Período: <strong>'+fmtF(desde)+' al '+fmtF(hasta)+'</strong></div>':'');
+
+  // Advertencia de pendientes sin resolver
+  var warnEl = document.getElementById('cbPendWarn');
+  var warnTxt = document.getElementById('cbPendWarnTxt');
+  if(pendSinResolver > 0){
+    warnEl.style.display = '';
+    warnTxt.textContent = 'Hay '+pendSinResolver+' jornada'+(pendSinResolver!==1?'s':'')
+      +' pendiente'+(pendSinResolver!==1?'s':'')+' sin resolver. Podés confirmar igual — quedarán excluidas del cálculo.';
+  } else {
+    warnEl.style.display = 'none';
+  }
+
+  // Advertencia sin período activo
+  var pa = getPeriodoActivo();
+  document.getElementById('cbNoPeriodo').style.display = pa ? 'none' : '';
+
+  document.getElementById('modalConfirmarBloque').classList.add('open');
+}
+
+function cerrarModalConfirmarBloque(){
+  document.getElementById('modalConfirmarBloque').classList.remove('open');
+}
+
+function confirmarBloqueAlPeriodo(){
+  if(!datosGlobales || !datosGlobales.jornadas || !datosGlobales.jornadas.length){
+    cerrarModalConfirmarBloque(); return;
+  }
+  var pa = getPeriodoActivo();
+
+  // Si no hay período activo, crear uno genérico
+  if(!pa){
+    var hoy = new Date();
+    var MESES_L=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    pa = {
+      nombre: MESES_L[hoy.getMonth()]+' '+hoy.getFullYear(),
+      mes: hoy.getFullYear()+'-'+String(hoy.getMonth()+1).padStart(2,'0'),
+      auditorias:[], jornadas:[], descansos:[], descolgadas:[], resumen:[],
+      creadoEl: hoy.toISOString(), ultimaSync: null
+    };
+  }
+
+  // Normalizar jornadas del bloque actual
+  var jornadasBloque = datosGlobales.jornadas.map(normalizarJornada).filter(Boolean);
+  var desde = datosGlobales._desde || '';
+  var hasta  = datosGlobales._hasta  || '';
+
+  // Merge jornadas al período: reemplazar si existe (nombre+fecha), agregar si no
+  jornadasBloque.forEach(function(jNueva){
+    var idx = pa.jornadas.findIndex(function(j){ return j.nombre===jNueva.nombre && j.fecha===jNueva.fecha; });
+    if(idx>=0) pa.jornadas[idx] = jNueva;
+    else       pa.jornadas.push(jNueva);
+  });
+
+  // Merge descansos
+  (datosGlobales.descansos||[]).forEach(function(dNuevo){
+    var idx = (pa.descansos||[]).findIndex(function(d){
+      return d.nombre===dNuevo.nombre && d.fecha===dNuevo.fecha && String(d.salida)===String(dNuevo.salida);
+    });
+    if(idx<0)(pa.descansos=pa.descansos||[]).push(dNuevo);
+  });
+
+  // Merge descolgadas (solo las excluidas o resueltas, no las aún pendientes)
+  (datosGlobales.descolgadas||[]).forEach(function(desc){
+    var idx=(pa.descolgadas||[]).findIndex(function(d){return d.nombre===desc.nombre&&d.fecha===desc.fecha;});
+    if(idx<0)(pa.descolgadas=pa.descolgadas||[]).push(desc);
+  });
+
+  // Reconstruir resumen acumulado
+  pa.resumen = reconstruirResumenDesdejornadas(pa.jornadas);
+
+  // Registrar este bloque
+  pa.auditorias = pa.auditorias||[];
+  pa.auditorias.push({
+    fechaImport: new Date().toLocaleDateString('es-AR'),
+    desde: desde,
+    hasta: hasta,
+    marcaciones: jornadasBloque.length,
+    pendientesResueltas: (datosGlobales.descolgadas||[]).filter(function(d){return d.excluida;}).length
+  });
+  pa.ultimaSync = null;
+  savePeriodoActivo(pa);
+
+  // Actualizar datosGlobales con el acumulado completo
+  pa.jornadas = pa.jornadas.map(normalizarJornada).filter(Boolean);
+  datosGlobales.jornadas    = pa.jornadas;
+  datosGlobales.descansos   = pa.descansos;
+  datosGlobales.resumen     = pa.resumen;
+  datosGlobales.descolgadas = pa.descolgadas;
+  datosGlobales._desde      = pa.mes ? pa.mes+'-01' : desde;
+  datosGlobales._hasta      = pa.mes ? pa.mes+'-31' : hasta;
+
+  // Limpiar bloque temporal
+  window._bloqueActual = null;
+
+  // Ocultar botón confirmar (ya confirmado)
+  var btnC = document.getElementById('btnConfirmarBloque');
+  if(btnC) btnC.style.display = 'none';
+
+  cerrarModalConfirmarBloque();
+  renderPeriodoActivo();
+  sincronizarPeriodoConSheets();
+
+  // Toast
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:var(--g3);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:8px;transition:opacity .4s';
+  t.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Bloque '
+    +pa.auditorias.length+' confirmado y sumado al período "'+pa.nombre+'"';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); },400); }, 3500);
+
+  // Navegar al período en curso para ver el progreso
+  goPanel('panelPeriodo', document.getElementById('nav-periodo'));
+}
+
 // ======== PERÍODO EN CURSO ========
 
 // Días hábiles del mes (Lun-Sáb, sin feriados)
@@ -4272,6 +4411,10 @@ renderPeriodoActivo();
   var pa = getPeriodoActivo();
   if(pa && pa.jornadas && pa.jornadas.length){
     cargarPeriodoEnDatosGlobales(pa);
+    // Ocultar botón confirmar — el período ya está guardado, no hay bloque pendiente
+    var btnC = document.getElementById('btnConfirmarBloque');
+    if(btnC) btnC.style.display = 'none';
+    window._bloqueActual = null;
     // Intentar bajar la versión más reciente de Sheets en background
     cargarPeriodoDesdeSheets(false);
   }
