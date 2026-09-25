@@ -3577,12 +3577,12 @@ function confirmarValidar(){
     },
     empleados: res.map(function(r){
       return {
-        nombre:   r.nombre,
-        sector:   r.sector,
-        dias:     r.dias,
-        horas:    parseFloat(r.horas.toFixed(2)),
-        extra:    parseFloat(r.extra.toFixed(2)),
-        dobles:   r.dobles||0,
+        nombre:       r.nombre,
+        sector:       r.sector,
+        dias:         r.dias,
+        horas:        parseFloat(r.horas.toFixed(2)),
+        extra:        parseFloat(r.extra.toFixed(2)),
+        dobles:       r.dobles||0,
         normDiurna:   parseFloat((r.normDiurna||0).toFixed(2)),
         normNocturna: parseFloat((r.normNocturna||0).toFixed(2)),
         extraDiurna:  parseFloat((r.extraDiurna||0).toFixed(2)),
@@ -3590,7 +3590,25 @@ function confirmarValidar(){
         hsSabado:     parseFloat((r.hsSabado||0).toFixed(2)),
         hsDomingo:    parseFloat((r.hsDomingo||0).toFixed(2)),
         hsFeriado:    parseFloat((r.hsFeriado||0).toFixed(2)),
-        total:    Math.round(r.total)
+        total:        Math.round(r.total),
+        // Detalle de jornadas individuales — para el desglose día por día
+        jornadas: (datosGlobales.jornadas||[])
+          .filter(function(j){ return j.nombre===r.nombre; })
+          .sort(function(a,b){ return a.fecha.localeCompare(b.fecha); })
+          .map(function(j){
+            return {
+              fecha:        j.fecha,
+              entrada:      j.entrada ? fmtH(new Date(j.entrada)) : '-',
+              salida:       j.salida  ? fmtH(new Date(j.salida))  : '-',
+              turno:        j.turno   ? (j.turno.label||j.turno.tipo||'') : '',
+              tipoDia:      j.tipoDia||'Normal',
+              hsTrabajadas: parseFloat((j.hsTrabajadas||0).toFixed(2)),
+              hsExtra:      parseFloat((j.hsExtra||0).toFixed(2)),
+              descDescMin:  Math.round(j.descDescMin||0),
+              mult:         j.mult||1,
+              total:        Math.round(j.total||0)
+            };
+          })
       };
     })
   };
@@ -3697,6 +3715,9 @@ function renderHistorialAnual(){
         +'<div class="ha-month-stat"><div class="ha-month-total">$'+Math.round(p.totales.total).toLocaleString('es-AR')+'</div><div class="ha-month-stat-lbl">Total liquidado</div></div>'
         +'</div>'
         +'<div class="ha-actions">'
+        +'<button class="btn btn-sm btn-outline" onclick="event.stopPropagation();generarPDFHistorial(\''+p.nombre+'\')" title="Generar PDF de liquidación de todos los empleados">'
+        +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+        +' PDF todos</button>'
         +'<button class="ha-del-btn" onclick="event.stopPropagation();eliminarPeriodoHistorial(\''+p.nombre+'\')" title="Eliminar período">'
         +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>'
         +'</button>'
@@ -3706,50 +3727,92 @@ function renderHistorialAnual(){
 
       // Detalle empleados
       var detailHtml = '<div class="ha-month-detail" id="'+hid+'_d">'
-        +'<div style="font-size:11px;color:var(--ink4);margin-bottom:10px">Guardado el '+new Date(p.guardado).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+(p.desde?' &nbsp;·&nbsp; Período: '+fmtF(p.desde)+' al '+fmtF(p.hasta):'')+'</div>'
-        +'<div class="table-wrap"><table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Empleado</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Sector</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:center">Días</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs norm. diurna</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs norm. nocturna</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs extra</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs sábado</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs domingo</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs feriado</th>'
-        +'<th style="background:linear-gradient(180deg,#f6faf6,#f0f7f1);padding:8px 10px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Total $</th>'
-        +'</tr></thead><tbody>';
+        +'<div style="font-size:11px;color:var(--ink4);margin-bottom:12px">Guardado el '+new Date(p.guardado).toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+(p.desde?' &nbsp;·&nbsp; Período: '+fmtF(p.desde)+' al '+fmtF(p.hasta):'')+'</div>';
 
-      p.empleados.forEach(function(e, ei){
-        var bg = ei%2===1 ? 'background:#fafcfa;' : '';
-        detailHtml += '<tr style="'+bg+'">'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2)"><div style="display:flex;align-items:center;gap:7px"><div class="avatar '+getAvColor(e.nombre)+'">'+ini(e.nombre)+'</div>'+e.nombre+'</div></td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2)">'+bSec(e.sector)+'</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:center;font-weight:600">'+e.dias+'</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+e.normDiurna.toFixed(1)+'h</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+e.normNocturna.toFixed(1)+'h</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.extra>0?'<span style="color:var(--orange);font-weight:700">'+e.extra.toFixed(1)+'h</span>':'-')+'</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.hsSabado>0?e.hsSabado.toFixed(1)+'h':'-')+'</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.hsDomingo>0?e.hsDomingo.toFixed(1)+'h':'-')+'</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right">'+(e.hsFeriado>0?e.hsFeriado.toFixed(1)+'h':'-')+'</td>'
-          +'<td style="padding:7px 10px;border-bottom:1px solid var(--border2);text-align:right;font-weight:700;color:var(--g2)">$'+Math.round(e.total).toLocaleString('es-AR')+'</td>'
-          +'</tr>';
+      // Una card expandible por empleado
+      p.empleados.forEach(function(emp, ei){
+        var eid = hid+'_emp_'+ei;
+        var totHsEmp = emp.horas||0;
+        var totExEmp = emp.extra||0;
+
+        detailHtml += '<div style="background:#fff;border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden">'
+          // Header del empleado
+          +'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:linear-gradient(180deg,#fbfefb,#f6faf6);cursor:pointer;border-bottom:1px solid transparent" '
+          +'id="'+eid+'_h" onclick="toggleHaEmp(\''+eid+'\')">'
+          +'<div class="avatar '+getAvColor(emp.nombre)+'">'+ini(emp.nombre)+'</div>'
+          +'<div style="flex:1">'
+            +'<div style="font-size:13px;font-weight:700;color:var(--ink)">'+emp.nombre+'</div>'
+            +'<div style="font-size:11px;color:var(--ink3);margin-top:1px">'+bSec(emp.sector)+' &nbsp;·&nbsp; '+emp.dias+' días</div>'
+          +'</div>'
+          +'<div style="display:flex;gap:18px;align-items:center">'
+            +'<div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--ink)">'+totHsEmp.toFixed(1)+'h</div><div style="font-size:10px;color:var(--ink4)">trabajadas</div></div>'
+            +(totExEmp>0?'<div style="text-align:right"><div style="font-size:12px;font-weight:700;color:var(--orange)">'+totExEmp.toFixed(1)+'h</div><div style="font-size:10px;color:var(--ink4)">extra</div></div>':'')
+            +'<div style="text-align:right"><div style="font-size:14px;font-weight:800;color:var(--g2)">$'+Math.round(emp.total).toLocaleString('es-AR')+'</div><div style="font-size:10px;color:var(--ink4)">total</div></div>'
+            +'<button class="btn btn-xs btn-outline" onclick="event.stopPropagation();generarPDFEmpleadoHistorial(\''+p.nombre+'\','+ei+')" title="PDF individual" style="flex-shrink:0">'
+            +'<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+            +' PDF</button>'
+            +'<span style="font-size:11px;color:var(--ink4);margin-left:4px" id="'+eid+'_chv">▶</span>'
+          +'</div>'
+          +'</div>'
+
+          // Detalle de jornadas del empleado
+          +'<div style="display:none" id="'+eid+'_d">'
+          +'<div style="overflow-x:auto">'
+          +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
+          +'<thead><tr style="background:linear-gradient(180deg,#f6faf6,#f0f7f1)">'
+          +'<th style="padding:7px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border);white-space:nowrap">Fecha</th>'
+          +'<th style="padding:7px 10px;text-align:center;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Entrada</th>'
+          +'<th style="padding:7px 10px;text-align:center;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Salida</th>'
+          +'<th style="padding:7px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Turno</th>'
+          +'<th style="padding:7px 10px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Tipo</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Hs trab.</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Hs extra</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Desc. (min)</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Total $</th>'
+          +'</tr></thead><tbody>';
+
+        if(emp.jornadas && emp.jornadas.length){
+          emp.jornadas.forEach(function(j, ji){
+            var bg = ji%2===1?'background:#fafcfa;':'';
+            var tipoBadge = j.tipoDia && j.tipoDia!=='Normal'
+              ? '<span style="background:'+(j.tipoDia==='Feriado'?'var(--red-bg)':j.tipoDia==='Domingo'?'var(--orange-bg)':'#fffaeb')+';color:'+(j.tipoDia==='Feriado'?'var(--red)':j.tipoDia==='Domingo'?'var(--orange)':'#8a6200')+';padding:1px 7px;border-radius:10px;font-size:9px;font-weight:700">'+j.tipoDia+(j.mult===2?' ×2':'')+'</span>'
+              : '<span style="background:var(--border2);color:var(--ink4);padding:1px 7px;border-radius:10px;font-size:9px;font-weight:600">Normal</span>';
+
+            detailHtml += '<tr style="'+bg+'">'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);font-weight:600;color:var(--ink2)">'+fmtF(j.fecha)+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);text-align:center;font-weight:500;color:var(--ink2)">'+j.entrada+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);text-align:center;font-weight:500;color:var(--ink2)">'+j.salida+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);color:var(--ink3)">'+j.turno+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2)">'+tipoBadge+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);text-align:right;font-weight:600">'+j.hsTrabajadas.toFixed(2)+'h</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);text-align:right;color:var(--orange);font-weight:'+(j.hsExtra>0?'600':'400')+'">'+(j.hsExtra>0?j.hsExtra.toFixed(2)+'h':'-')+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);text-align:right;color:var(--ink4)">'+(j.descDescMin>0?j.descDescMin+' min':'-')+'</td>'
+              +'<td style="padding:6px 10px;border-bottom:1px solid var(--border2);text-align:right;font-weight:700;color:var(--g2)">$'+Math.round(j.total).toLocaleString('es-AR')+'</td>'
+              +'</tr>';
+          });
+
+          // Fila totales del empleado
+          detailHtml += '<tr style="background:linear-gradient(180deg,#eaf4ee,#e2f0e8);font-weight:700;border-top:2px solid var(--g8)">'
+            +'<td style="padding:7px 10px" colspan="5">Total '+emp.nombre+'</td>'
+            +'<td style="padding:7px 10px;text-align:right">'+totHsEmp.toFixed(2)+'h</td>'
+            +'<td style="padding:7px 10px;text-align:right;color:var(--orange)">'+(totExEmp>0?totExEmp.toFixed(2)+'h':'-')+'</td>'
+            +'<td style="padding:7px 10px;text-align:right">-</td>'
+            +'<td style="padding:7px 10px;text-align:right;color:var(--g2);font-size:13px">$'+Math.round(emp.total).toLocaleString('es-AR')+'</td>'
+            +'</tr>';
+        } else {
+          detailHtml += '<tr><td colspan="9" style="padding:16px;text-align:center;color:var(--ink4);font-size:12px">Sin detalle de jornadas disponible (período guardado con versión anterior)</td></tr>';
+        }
+
+        detailHtml += '</tbody></table></div></div></div>';
       });
 
-      // Fila de totales
-      detailHtml += '<tr style="background:linear-gradient(180deg,#eaf4ee,#e2f0e8);font-weight:700;border-top:2px solid var(--g8)">'
-        +'<td style="padding:7px 10px" colspan="2">Total del período</td>'
-        +'<td style="padding:7px 10px;text-align:center">'+p.totales.dias+'</td>'
-        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.normDiurna;},0).toFixed(1)+'h</td>'
-        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.normNocturna;},0).toFixed(1)+'h</td>'
-        +'<td style="padding:7px 10px;text-align:right">'+p.totales.extra.toFixed(1)+'h</td>'
-        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.hsSabado;},0).toFixed(1)+'h</td>'
-        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.hsDomingo;},0).toFixed(1)+'h</td>'
-        +'<td style="padding:7px 10px;text-align:right">'+p.empleados.reduce(function(s,e){return s+e.hsFeriado;},0).toFixed(1)+'h</td>'
-        +'<td style="padding:7px 10px;text-align:right;color:var(--g2);font-size:14px">$'+Math.round(p.totales.total).toLocaleString('es-AR')+'</td>'
-        +'</tr>';
+      // Fila total general del período
+      detailHtml += '<div style="background:linear-gradient(135deg,var(--g10),#f0f9f5);border:1.5px solid var(--g8);border-radius:var(--r);padding:12px 16px;margin-top:4px;display:flex;justify-content:space-between;align-items:center">'
+        +'<div style="font-size:13px;font-weight:700;color:var(--g2)">Total del período — '+p.totales.empleados+' empleados · '+p.totales.dias+' jornadas · '+p.totales.horas.toFixed(1)+'h</div>'
+        +'<div style="font-size:18px;font-weight:800;color:var(--g2)">$'+Math.round(p.totales.total).toLocaleString('es-AR')+'</div>'
+        +'</div>';
 
-      detailHtml += '</tbody></table></div></div>';
+      detailHtml += '</div>';
       mcard.innerHTML = headerHtml + detailHtml;
       monthsCont.appendChild(mcard);
     });
@@ -3771,17 +3834,35 @@ function toggleHaMonth(hid){
   detail.style.display = isOpen ? 'none' : 'block';
 }
 
+function toggleHaEmp(eid){
+  var detail = document.getElementById(eid+'_d');
+  var chv    = document.getElementById(eid+'_chv');
+  var header = document.getElementById(eid+'_h');
+  if(!detail) return;
+  var isOpen = detail.style.display !== 'none';
+  detail.style.display = isOpen ? 'none' : 'block';
+  if(chv) chv.textContent = isOpen ? '▶' : '▼';
+  if(header) header.style.borderBottomColor = isOpen ? 'transparent' : 'var(--border2)';
+}
+
 function exportarHistorialCSV(){
   var hist = getHistorialAnual();
   if(!hist.length){ alert('No hay períodos guardados en el historial.'); return; }
-  var rows = [['Período','Año','Empleado','Sector','Días','Hs Norm. Diurna','Hs Norm. Nocturna','Hs Extra','Hs Sábado','Hs Domingo','Hs Feriado','Total $','Guardado']];
+  var rows = [['Período','Año','Empleado','Sector','Fecha','Entrada','Salida','Turno','Tipo día','Hs Trabajadas','Hs Extra','Desc (min)','Total Jornada $','Días Totales','Hs Totales','Total Empleado $','Guardado']];
   hist.forEach(function(p){
     p.empleados.forEach(function(e){
-      rows.push([p.nombre,p.anio,e.nombre,e.sector,e.dias,e.normDiurna,e.normNocturna,e.extra,e.hsSabado,e.hsDomingo,e.hsFeriado,e.total,new Date(p.guardado).toLocaleDateString('es-AR')]);
+      if(e.jornadas && e.jornadas.length){
+        e.jornadas.forEach(function(j){
+          rows.push([p.nombre,p.anio,e.nombre,e.sector,j.fecha,j.entrada,j.salida,j.turno,j.tipoDia,j.hsTrabajadas,j.hsExtra,j.descDescMin,j.total,e.dias,e.horas,e.total,new Date(p.guardado).toLocaleDateString('es-AR')]);
+        });
+      } else {
+        // Período guardado sin detalle de jornadas (versión anterior)
+        rows.push([p.nombre,p.anio,e.nombre,e.sector,'','','','','',e.horas,e.extra,'',e.total,e.dias,e.horas,e.total,new Date(p.guardado).toLocaleDateString('es-AR')]);
+      }
     });
   });
   var bom = '\uFEFF';
-  var csv = bom + rows.map(function(r){ return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var csv = bom + rows.map(function(r){ return r.map(function(c){ return '"'+String(c==null?'':c).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
   var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a'); a.href=url; a.download='historial_anual_vitagro.csv';
@@ -4081,7 +4162,153 @@ function confirmarBloqueAlPeriodo(){
   goPanel('panelPeriodo', document.getElementById('nav-periodo'));
 }
 
-// ======== PERÍODO EN CURSO ========
+// ======== PDF DESDE HISTORIAL ANUAL ========
+
+// Construye un objeto "r" compatible con buildReciboHTML desde datos del historial
+function empHistorialToR(emp, periodoNombre){
+  var jornadas = (emp.jornadas||[]).map(function(j){
+    // entrada/salida ya están guardadas como strings "HH:MM" en el historial
+    // Convertir a objetos Date falsos que fmtH pueda usar
+    function strToFakeDate(hhmm){
+      if(!hhmm || hhmm==='-') return null;
+      var partes = String(hhmm).split(':');
+      var d = new Date(2000,0,1);
+      d.setHours(parseInt(partes[0]||0,10), parseInt(partes[1]||0,10), 0, 0);
+      return d;
+    }
+    var turnoLabel = j.turno||'';
+    var esNoche = turnoLabel.toLowerCase().includes('noche');
+    return {
+      fecha:        j.fecha,
+      entrada:      strToFakeDate(j.entrada),
+      salida:       strToFakeDate(j.salida),
+      turno:        { label: turnoLabel, tipo: esNoche?'noche':'diurno' },
+      tipoDia:      j.tipoDia||'Normal',
+      hsTrabajadas: j.hsTrabajadas||0,
+      hsExtra:      j.hsExtra||0,
+      desglose:     {
+        hsSabado:  (j.tipoDia==='Sabado'?j.hsTrabajadas:0),
+        hsDomingo: (j.tipoDia==='Domingo'?j.hsTrabajadas:0),
+        hsFeriado: (j.tipoDia==='Feriado'?j.hsTrabajadas:0)
+      },
+      mult:         j.mult||1,
+      total:        j.total||0,
+      _descuentos:  []
+    };
+  });
+  return {
+    nombre:      emp.nombre,
+    sector:      emp.sector,
+    dias:        emp.dias,
+    horas:       emp.horas||0,
+    extra:       emp.extra||0,
+    total:       emp.total||0,
+    jornadas:    jornadas,
+    _descuentos: [],
+    _notas:      '',
+    _totalManual: null
+  };
+}
+
+function generarPDFEmpleadoHistorial(periodoNombre, empIdx){
+  var hist = getHistorialAnual();
+  var p = hist.find(function(x){ return x.nombre === periodoNombre; });
+  if(!p || !p.empleados[empIdx]){ alert('No se encontró el período o el empleado.'); return; }
+  var emp = p.empleados[empIdx];
+  var r   = empHistorialToR(emp, periodoNombre);
+  var empresa = cfg('cfg_empresa')||'VITAGRO';
+
+  // Usar formato 1 por hoja
+  var html = buildReciboHTML(r, periodoNombre, empresa, [], '', null, 1);
+
+  var tpl = document.getElementById('pdfTpl');
+  tpl.innerHTML = html;
+
+  html2canvas(tpl, {scale:2, useCORS:true, backgroundColor:'#fff'}).then(function(canvas){
+    var imgData = canvas.toDataURL('image/jpeg', 0.92);
+    var pdf = new jspdf.jsPDF({unit:'pt', format:'a4'});
+    var pw = pdf.internal.pageSize.getWidth();
+    var ph = pdf.internal.pageSize.getHeight();
+    var iw = canvas.width, ih = canvas.height;
+    var ratio = pw / iw;
+    var rendH = ih * ratio;
+    if(rendH <= ph){
+      pdf.addImage(imgData,'JPEG',0,0,pw,rendH);
+    } else {
+      var offset = 0;
+      while(offset < ih){
+        var sliceH = Math.min(ih - offset, ph / ratio);
+        var sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = iw; sliceCanvas.height = sliceH * 1;
+        var ctx2 = sliceCanvas.getContext('2d');
+        ctx2.drawImage(canvas, 0, offset, iw, sliceH, 0, 0, iw, sliceH);
+        var sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+        if(offset > 0) pdf.addPage();
+        pdf.addImage(sliceData,'JPEG',0,0,pw,sliceH*ratio);
+        offset += sliceH;
+      }
+    }
+    tpl.innerHTML = '';
+    pdf.save('Liquidacion_'+emp.nombre.replace(/\s+/g,'_')+'_'+periodoNombre.replace(/\s+/g,'_')+'.pdf');
+  });
+}
+
+function generarPDFHistorial(periodoNombre){
+  var hist = getHistorialAnual();
+  var p = hist.find(function(x){ return x.nombre === periodoNombre; });
+  if(!p || !p.empleados || !p.empleados.length){ alert('No se encontraron datos para este período.'); return; }
+
+  var empresa = cfg('cfg_empresa')||'VITAGRO';
+  var pdf = new jspdf.jsPDF({unit:'pt', format:'a4'});
+  var pw = pdf.internal.pageSize.getWidth();
+  var ph = pdf.internal.pageSize.getHeight();
+  var tpl = document.getElementById('pdfTpl');
+  var promises = p.empleados.map(function(emp){ return empHistorialToR(emp, periodoNombre); });
+
+  // Generar cada recibo secuencialmente
+  var idx = 0;
+  function siguiente(){
+    if(idx >= promises.length){
+      tpl.innerHTML = '';
+      pdf.save('Liquidacion_'+periodoNombre.replace(/\s+/g,'_')+'_todos.pdf');
+      return;
+    }
+    var r = promises[idx];
+    var html = buildReciboHTML(r, periodoNombre, empresa, [], '', null, 1);
+    tpl.innerHTML = html;
+
+    html2canvas(tpl, {scale:2, useCORS:true, backgroundColor:'#fff'}).then(function(canvas){
+      var imgData = canvas.toDataURL('image/jpeg', 0.92);
+      var iw = canvas.width, ih = canvas.height;
+      var ratio = pw / iw;
+      var rendH = ih * ratio;
+
+      if(idx > 0) pdf.addPage();
+
+      if(rendH <= ph){
+        pdf.addImage(imgData,'JPEG',0,0,pw,rendH);
+      } else {
+        var offset = 0;
+        var first = true;
+        while(offset < ih){
+          var sliceH = Math.min(ih - offset, ph / ratio);
+          var sliceCanvas = document.createElement('canvas');
+          sliceCanvas.width = iw; sliceCanvas.height = sliceH;
+          var ctx2 = sliceCanvas.getContext('2d');
+          ctx2.drawImage(canvas, 0, offset, iw, sliceH, 0, 0, iw, sliceH);
+          var sliceData = sliceCanvas.toDataURL('image/jpeg', 0.92);
+          if(!first) pdf.addPage();
+          pdf.addImage(sliceData,'JPEG',0,0,pw,sliceH*ratio);
+          first = false;
+          offset += sliceH;
+        }
+      }
+      idx++;
+      siguiente();
+    });
+  }
+  siguiente();
+}
 
 // Días hábiles del mes (Lun-Sáb, sin feriados)
 function diasHabilesDelMes(mesISO){
