@@ -4425,12 +4425,42 @@ function renderPeriodoActivo(){
   // Normalizar jornadas al renderizar (restaurar tipos desde JSON)
   pa.jornadas = (pa.jornadas||[]).map(normalizarJornada).filter(Boolean);
 
-  // Calcular progreso
-  var diasHab = diasHabilesDelMes(pa.mes);
-  var jornadasUnicas = {};
-  pa.jornadas.forEach(function(j){ jornadasUnicas[j.nombre+'|'+j.fecha]=1; });
-  var diasCargados = Object.keys(jornadasUnicas).length;
-  var pct = Math.min(100, Math.round(diasCargados/Math.max(diasHab,1)*100));
+  // ── Bug fix 1: Progreso basado en cobertura de fechas, no en cantidad de jornadas ──
+  // Calcular cuántos días del mes están cubiertos por los rangos de los bloques confirmados
+  var diasHab    = diasHabilesDelMes(pa.mes);
+  var diasMes    = 0; // días del mes (1..31)
+  var diasCubiertos = 0;
+  if(pa.mes){
+    var partesMes = pa.mes.split('-');
+    var anioMes = parseInt(partesMes[0],10), numMes = parseInt(partesMes[1],10)-1;
+    var ultimoDia = new Date(anioMes, numMes+1, 0).getDate();
+    diasMes = ultimoDia;
+    // Marcar días cubiertos por cualquier bloque confirmado
+    var diasCubiertosSet = {};
+    (pa.bloques||[]).forEach(function(b){
+      if(!b.desde || !b.hasta) return;
+      var d = new Date(b.desde+'T12:00:00');
+      var h = new Date(b.hasta+'T12:00:00');
+      while(d <= h){
+        diasCubiertosSet[d.toISOString().slice(0,10)] = 1;
+        d.setDate(d.getDate()+1);
+      }
+    });
+    diasCubiertos = Object.keys(diasCubiertosSet).filter(function(f){
+      var partes = f.split('-');
+      return parseInt(partes[1],10)-1 === numMes && parseInt(partes[0],10) === anioMes;
+    }).length;
+  } else {
+    // Sin mes definido: fallback a fechas únicas de jornadas
+    var fechasUnicas = {};
+    pa.jornadas.forEach(function(j){ fechasUnicas[j.fecha]=1; });
+    diasCubiertos = Object.keys(fechasUnicas).length;
+    diasHab = Math.max(diasHab, diasCubiertos);
+  }
+  var pct = Math.min(100, Math.round(diasCubiertos/Math.max(diasMes||diasHab,1)*100));
+  var labelProgreso = pa.mes
+    ? diasCubiertos+' de '+diasMes+' días del mes cubiertos'
+    : diasCubiertos+' días cubiertos / ~'+diasHab+' días hábiles';
 
   var totHs  = pa.jornadas.reduce(function(s,j){return s+(j.hsTrabajadas||0);},0);
   var totEx  = pa.jornadas.reduce(function(s,j){return s+(j.hsExtra||0);},0);
@@ -4444,7 +4474,7 @@ function renderPeriodoActivo(){
     +'<div class="pc-hero-nombre">'+pa.nombre+'</div>'
     +'<div class="pc-hero-sub">'+(pa.mes||'')+' · '+nAud+' bloque'+(nAud!==1?'s':'')+' cargado'+(nAud!==1?'s':'')+'</div>'
     +'<div class="pc-progress-wrap">'
-    +'<div class="pc-progress-label"><span>Progreso del mes</span><span>'+diasCargados+' jornadas cargadas / ~'+diasHab+' días hábiles</span></div>'
+    +'<div class="pc-progress-label"><span>Progreso del mes</span><span>'+labelProgreso+'</span></div>'
     +'<div class="pc-progress-bar"><div class="pc-progress-fill" style="width:'+pct+'%"></div></div>'
     +'</div>'
     +'<div class="pc-stats">'
@@ -4460,16 +4490,16 @@ function renderPeriodoActivo(){
     if(!nAud){
       audDiv.innerHTML='<div class="card"><div class="card-body" style="color:var(--ink4);font-size:12px;text-align:center;padding:20px">Sin bloques cargados aún. Importá el primer tramo del log.</div></div>';
     } else {
-      var html2 = '<div class="card"><div class="card-header"><div class="card-title">'
+      var html2 = '<div class="card" style="margin-bottom:14px"><div class="card-header"><div class="card-title">'
         +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'
-        +' Bloques cargados</div></div><div class="card-body"><div class="pc-auditoria-list">';
+        +' Bloques confirmados</div></div><div class="card-body"><div class="pc-auditoria-list">';
       pa.auditorias.forEach(function(a,ai){
         html2 += '<div class="pc-auditoria-item">'
           +'<div class="pc-aud-dot"></div>'
           +'<div style="flex:1"><div class="pc-aud-fecha">Bloque '+(ai+1)+' · '+a.fechaImport+'</div>'
           +'<div class="pc-aud-rango">'+fmtF(a.desde)+' al '+fmtF(a.hasta)+'</div>'
           +(a.totales?'<div style="font-size:10px;color:var(--ink3);margin-top:2px">'
-            +a.totales.jornadas+' jornadas · '+a.totales.horas.toFixed(1)+'h · $'+Math.round(a.totales.total).toLocaleString('es-AR')
+            +(a.totales.jornadas||a.marcaciones||0)+' jornadas · '+(a.totales.horas||0).toFixed(1)+'h · $'+Math.round(a.totales.total||0).toLocaleString('es-AR')
             +'</div>':'')
           +'</div>'
           +'<button class="pc-aud-del" onclick="eliminarBloque('+ai+')" title="Eliminar este bloque">'
@@ -4479,11 +4509,50 @@ function renderPeriodoActivo(){
       html2 += '</div><button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="abrirNuevaAuditoria()">'
         +'<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'
         +' Cargar próxima semana</button></div></div>';
+
+      // ── Bug fix 2: Resumen por empleado acumulado ──
+      var resumen = pa.resumen || reconstruirResumenDesdejornadas(pa.jornadas);
+      if(resumen.length){
+        html2 += '<div class="card"><div class="card-header"><div class="card-title">'
+          +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a8.38 8.38 0 0 1 13 0"/></svg>'
+          +' Resumen acumulado por empleado</div></div>'
+          +'<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
+          +'<thead><tr style="background:linear-gradient(180deg,#f6faf6,#f0f7f1)">'
+          +'<th style="padding:9px 12px;text-align:left;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border)">Empleado</th>'
+          +'<th style="padding:9px 12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:center">Días</th>'
+          +'<th style="padding:9px 12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs trabajadas</th>'
+          +'<th style="padding:9px 12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Hs extra</th>'
+          +'<th style="padding:9px 12px;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink3);border-bottom:1.5px solid var(--border);text-align:right">Total $</th>'
+          +'</tr></thead><tbody>';
+        resumen.forEach(function(r, ri){
+          var bg = ri%2===1 ? 'background:#fafcfa;' : '';
+          html2 += '<tr style="'+bg+'">'
+            +'<td style="padding:8px 12px;border-bottom:1px solid var(--border2)">'
+            +'<div style="display:flex;align-items:center;gap:8px">'
+            +'<div class="avatar '+getAvColor(r.nombre)+'">'+ini(r.nombre)+'</div>'
+            +r.nombre+'</div></td>'
+            +'<td style="padding:8px 12px;border-bottom:1px solid var(--border2);text-align:center;font-weight:600">'+r.dias+'</td>'
+            +'<td style="padding:8px 12px;border-bottom:1px solid var(--border2);text-align:right;font-weight:600">'+r.horas.toFixed(1)+'h</td>'
+            +'<td style="padding:8px 12px;border-bottom:1px solid var(--border2);text-align:right;color:var(--orange);font-weight:'+(r.extra>0?'600':'400')+'">'+(r.extra>0?r.extra.toFixed(1)+'h':'-')+'</td>'
+            +'<td style="padding:8px 12px;border-bottom:1px solid var(--border2);text-align:right;font-weight:700;color:var(--g2)">$'+Math.round(r.total).toLocaleString('es-AR')+'</td>'
+            +'</tr>';
+        });
+        // Total general
+        html2 += '<tr style="background:linear-gradient(180deg,#eaf4ee,#e2f0e8);font-weight:700;border-top:2px solid var(--g8)">'
+          +'<td style="padding:8px 12px">Total acumulado</td>'
+          +'<td style="padding:8px 12px;text-align:center">'+resumen.reduce(function(s,r){return s+r.dias;},0)+'</td>'
+          +'<td style="padding:8px 12px;text-align:right">'+totHs.toFixed(1)+'h</td>'
+          +'<td style="padding:8px 12px;text-align:right;color:var(--orange)">'+(totEx>0?totEx.toFixed(1)+'h':'-')+'</td>'
+          +'<td style="padding:8px 12px;text-align:right;color:var(--g2);font-size:14px">$'+Math.round(totP).toLocaleString('es-AR')+'</td>'
+          +'</tr>';
+        html2 += '</tbody></table></div></div>';
+      }
+
       audDiv.innerHTML = html2;
     }
   }
 
-  // Alerta mes completo
+  // Alerta mes completo — basada en cobertura de fechas (≥ 95% del mes)
   if(alertDiv) alertDiv.style.display = (pct >= 95 ? '' : 'none');
 
   // Badge nav
