@@ -936,7 +936,7 @@ tr.data-row:hover td{background:#f5fbf7;cursor:pointer}
   <div id="rtab0"><div class="table-wrap"><table><thead><tr>
     <th>Empleado</th><th>Sector</th><th>Fecha</th><th>Entrada</th><th>Salida</th>
     <th>Turno</th><th>Desc. total</th><th>Desc. desct.</th><th>Hs trab.</th>
-    <th>Hs extra</th><th>Tipo día</th><th>Total $</th>
+    <th>Hs extra</th><th>Tipo día</th><th>Total $</th><th></th>
   </tr></thead><tbody id="body_det"></tbody></table></div></div>
 
   <div id="rtab1" style="display:none"><div class="table-wrap"><table><thead><tr>
@@ -2123,11 +2123,15 @@ function renderReportes(){
     var tr=document.createElement('tr');
     var hsT=j.hsTrabajadas||0, hsE=j.hsExtra||0;
     var descT=j.totalDescMin||0, descD=j.descDescMin||0;
+    var jIdx=datosGlobales.jornadas.findIndex(function(jj){return jj.nombre===j.nombre&&jj.fecha===j.fecha;});
     tr.innerHTML='<td><div class="name-cell"><div class="avatar '+getAvColor(j.nombre)+'">'+ini(j.nombre)+'</div>'+j.nombre+'</div></td>'
       +'<td>'+bSec(j.sector)+'</td><td>'+fmtF(j.fecha)+'</td><td>'+fmtH(j.entrada)+'</td><td>'+fmtH(j.salida)+'</td>'
       +'<td>'+bTurno(j.turno||{})+'</td><td>'+Math.round(descT)+' min</td><td>'+Math.round(descD)+' min</td>'
       +'<td>'+hsT.toFixed(2)+'h</td><td>'+(hsE>0?hsE.toFixed(2)+'h':'-')+'</td>'
-      +'<td>'+bDia(j.tipoDia||'Normal',j.mult||1)+'</td><td><strong>'+pesos(j.total||0)+'</strong></td>';
+      +'<td>'+bDia(j.tipoDia||'Normal',j.mult||1)+'</td><td><strong>'+pesos(j.total||0)+'</strong></td>'
+      +'<td><button class="btn-edit-jornada" onclick="abrirEditorJornada('+jIdx+')" title="Editar marcaciones de esta jornada">'
+      +'<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>'
+      +'</button></td>';
     b0.appendChild(tr);
   });
 
@@ -3472,6 +3476,30 @@ function guardarEdicionJornada(){
   j.desglose     = pagoN.desglose;
 
   recalcularResumen();
+
+  // También actualizar la jornada en el snapshot del bloque correspondiente
+  // para que los cambios sobrevivan si se reconstruye desde bloques
+  var paEdit = getPeriodoActivo();
+  if(paEdit && paEdit.bloques){
+    paEdit.bloques.forEach(function(bloque){
+      var bIdx = (bloque.jornadas||[]).findIndex(function(bj){
+        return bj.nombre === j.nombre && bj.fecha === j.fecha;
+      });
+      if(bIdx >= 0){
+        bloque.jornadas[bIdx] = Object.assign({}, j);
+        // Recalcular totales del bloque
+        bloque.totales = {
+          empleados: new Set((bloque.jornadas||[]).map(function(bj){return bj.nombre;})).size,
+          jornadas:  (bloque.jornadas||[]).length,
+          horas:     parseFloat((bloque.jornadas||[]).reduce(function(s,bj){return s+(bj.hsTrabajadas||0);},0).toFixed(2)),
+          extra:     parseFloat((bloque.jornadas||[]).reduce(function(s,bj){return s+(bj.hsExtra||0);},0).toFixed(2)),
+          total:     Math.round((bloque.jornadas||[]).reduce(function(s,bj){return s+(bj.total||0);},0))
+        };
+      }
+    });
+    savePeriodoActivo(paEdit);
+  }
+
   renderReportes();
   cerrarModalEditJornada();
 
@@ -3894,28 +3922,63 @@ function enviarHistorialASheets(registro){
   var url = cfg('cfg_gscript').trim();
   if(!url) return; // sin URL configurada, solo local
 
+  // Construir payload liviano (sin jornadas individuales — el historial detallado vive en localStorage)
+  // El Apps Script escribe una fila por empleado en la hoja _Historial
+  var empleadosSheets = registro.empleados.map(function(e){
+    return {
+      nombre:       e.nombre,
+      sector:       e.sector,
+      dias:         e.dias,
+      horas:        e.horas,
+      extra:        e.extra,
+      normDiurna:   e.normDiurna||0,
+      normNocturna: e.normNocturna||0,
+      extraDiurna:  e.extraDiurna||0,
+      extraNocturna:e.extraNocturna||0,
+      hsSabado:     e.hsSabado||0,
+      hsDomingo:    e.hsDomingo||0,
+      hsFeriado:    e.hsFeriado||0,
+      total:        e.total
+    };
+  });
+
   var payload = encodeURIComponent(JSON.stringify({
-    accion:    'historialAnual',
-    periodo:   registro.nombre,
+    periodo:   registro.nombre,   // campo que lee el Apps Script
     anio:      registro.anio,
     desde:     registro.desde,
     hasta:     registro.hasta,
     guardado:  registro.guardado,
     totales:   registro.totales,
-    empleados: registro.empleados
+    empleados: empleadosSheets
   }));
+
+  function showSheetsToast(ok, msg){
+    var t = document.createElement('div');
+    t.style.cssText = 'position:fixed;bottom:70px;right:24px;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);display:flex;align-items:center;gap:8px;transition:opacity .4s;'
+      + (ok ? 'background:#e5f3e8;color:#1e5c28;border:1.5px solid var(--g8)' : 'background:#fff3e8;color:#a0522d;border:1.5px solid #f5c89a');
+    t.innerHTML = (ok
+      ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+      : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>')
+      + ' Sheets: ' + msg;
+    document.body.appendChild(t);
+    setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 5000);
+  }
 
   fetch(url + '?historial=' + payload)
     .then(function(r){ return r.json(); })
     .then(function(d){
       if(d.status === 'ok'){
-        // Marcar período como sincronizado
         var hist = getHistorialAnual();
         var idx = hist.findIndex(function(p){ return p.nombre === registro.nombre; });
         if(idx >= 0){ hist[idx]._synced = true; saveHistorialAnual(hist); renderHistorialAnual(); }
+        showSheetsToast(true, 'Período "'+registro.nombre+'" guardado correctamente');
+      } else {
+        showSheetsToast(false, d.mensaje || 'Error al guardar en Sheets');
       }
     })
-    .catch(function(){}); // fallo silencioso — el dato ya está en localStorage
+    .catch(function(e){
+      showSheetsToast(false, 'No se pudo conectar con Sheets. El historial quedó guardado localmente.');
+    });
 }
 
 function cargarHistorialDesdeSheets(manual){
