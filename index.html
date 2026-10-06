@@ -4211,7 +4211,8 @@ function confirmarBloqueAlPeriodo(){
   cerrarModalConfirmarBloque();
   renderPeriodoActivo();
   renderReportes();
-  sincronizarPeriodoConSheets();
+  sincronizarPeriodoConSheets(false);   // actualiza _PeriodoActivo (estado completo)
+  enviarBloqueASheets(pa, snapshot);    // escribe filas en _BloquesEnCurso (auditoría)
 
   // Toast
   var t = document.createElement('div');
@@ -4546,6 +4547,19 @@ function renderPeriodoActivo(){
     +'<div class="pc-stat"><div class="pc-stat-val">'+totEx.toFixed(1)+'h</div><div class="pc-stat-lbl">Hs extra</div></div>'
     +'<div class="pc-stat"><div class="pc-stat-val" style="font-size:15px">$'+Math.round(totP).toLocaleString('es-AR')+'</div><div class="pc-stat-lbl">Total acumulado</div></div>'
     +'</div>'
+    +'<div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px">'
+    +'<div id="pcSyncStatus" style="font-size:11px;color:rgba(255,255,255,.6)">'
+    +(pa.ultimaSync
+      ? '✓ Sheets actualizado: '+new Date(pa.ultimaSync).toLocaleString('es-AR')
+      : cfg('cfg_gscript').trim() ? '⚠ Pendiente de sincronizar' : 'Sheets no configurado')
+    +'</div>'
+    +'<div style="display:flex;gap:6px">'
+    +'<button onclick="sincronizarPeriodoConSheets(true)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;cursor:pointer" title="Subir período activo a Sheets">'
+    +'↑ Subir</button>'
+    +'<button onclick="cargarPeriodoDesdeSheets(true)" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:11px;font-weight:600;padding:4px 12px;border-radius:6px;cursor:pointer" title="Bajar período activo desde Sheets (útil al cambiar de PC)">'
+    +'↓ Bajar</button>'
+    +'</div>'
+    +'</div>'
     +'</div>';
 
   // Bloques cargados
@@ -4788,43 +4802,112 @@ function cerrarMesManual(){
 var _origConfirmarValidar = typeof confirmarValidar !== 'undefined' ? confirmarValidar : null;
 
 // Sincronización del período activo con Sheets
-function sincronizarPeriodoConSheets(){
-  var pa = getPeriodoActivo();
+// Sincronización silenciosa — se llama automáticamente al confirmar cada bloque
+// manual=true → muestra alertas si no hay URL configurada
+function sincronizarPeriodoConSheets(manual){
+  var pa  = getPeriodoActivo();
   var url = cfg('cfg_gscript').trim();
-  if(!url){ alert('Configurá la URL del Web App en Configuración → Google Sheets.'); return; }
-  if(!pa){ alert('No hay período activo para sincronizar.'); return; }
+  if(!url){
+    if(manual) alert('Configurá la URL del Web App en Configuración → Google Sheets.');
+    return;
+  }
+  if(!pa){
+    if(manual) alert('No hay período activo para sincronizar.');
+    return;
+  }
 
   var syncDiv = document.getElementById('pcSyncStatus');
-  if(syncDiv) syncDiv.innerHTML='<span style="color:var(--blue)">Sincronizando...</span>';
+  if(syncDiv) syncDiv.innerHTML='<span style="color:var(--blue)">↑ Subiendo a Sheets...</span>';
 
   var payload = encodeURIComponent(JSON.stringify({
-    accion:   'periodoActivo',
-    nombre:   pa.nombre,
-    mes:      pa.mes,
+    accion:    'periodoActivo',
+    nombre:    pa.nombre,
+    mes:       pa.mes,
     auditorias: pa.auditorias,
-    jornadas: (pa.jornadas||[]).map(function(j){
-      return {nombre:j.nombre,sector:j.sector,fecha:j.fecha,
-              hsTrabajadas:j.hsTrabajadas,hsExtra:j.hsExtra,total:j.total};
+    jornadas:  (pa.jornadas||[]).map(function(j){
+      return {nombre:j.nombre, sector:j.sector, fecha:j.fecha,
+              hsTrabajadas:j.hsTrabajadas, hsExtra:j.hsExtra, total:j.total};
     }),
-    resumen:  (pa.resumen||[]).map(function(r){
-      return {nombre:r.nombre,sector:r.sector,dias:r.dias,horas:r.horas,extra:r.extra,total:r.total,
-              normDiurna:r.normDiurna||0,normNocturna:r.normNocturna||0,hsSabado:r.hsSabado||0,hsDomingo:r.hsDomingo||0,hsFeriado:r.hsFeriado||0};
+    resumen:   (pa.resumen||[]).map(function(r){
+      return {nombre:r.nombre, sector:r.sector, dias:r.dias, horas:r.horas,
+              extra:r.extra, total:r.total,
+              normDiurna:r.normDiurna||0, normNocturna:r.normNocturna||0,
+              hsSabado:r.hsSabado||0, hsDomingo:r.hsDomingo||0, hsFeriado:r.hsFeriado||0};
     }),
-    guardado: new Date().toISOString()
+    guardado:  new Date().toISOString()
   }));
 
   fetch(url+'?periodoActivo='+payload)
-    .then(function(r){return r.json();})
+    .then(function(r){ return r.json(); })
     .then(function(d){
       if(d.status==='ok'){
         pa.ultimaSync = new Date().toISOString();
         savePeriodoActivo(pa);
-        if(syncDiv) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Sincronizado: '+new Date().toLocaleString('es-AR')+'</span>';
-      } else throw new Error(d.mensaje||'Error');
+        if(syncDiv) syncDiv.innerHTML='<span style="color:var(--g4);font-weight:600">✓ Sheets actualizado: '+new Date().toLocaleString('es-AR')+'</span>';
+        if(manual) _toastSync('Período sincronizado con Google Sheets', true);
+      } else {
+        throw new Error(d.mensaje||'Error desconocido');
+      }
     })
     .catch(function(e){
-      if(syncDiv) syncDiv.innerHTML='<span style="color:var(--red)">Error al sincronizar: '+e.message+'</span>';
+      if(syncDiv) syncDiv.innerHTML='<span style="color:var(--orange)">⚠ Sin Sheets — datos guardados localmente</span>';
+      if(manual) _toastSync('Error al conectar con Sheets: '+e.message, false);
     });
+}
+
+// Envía las filas del bloque confirmado a la hoja _BloquesEnCurso para auditoría
+function enviarBloqueASheets(pa, snapshot){
+  var url = cfg('cfg_gscript').trim();
+  if(!url) return; // sin URL — silencioso
+
+  // Construir resumen por empleado del bloque
+  var resumenBloque = snapshot.resumen || [];
+  var filas = resumenBloque.map(function(r){
+    return {
+      nombre:   r.nombre,
+      sector:   r.sector,
+      dias:     r.dias,
+      horas:    parseFloat((r.horas||0).toFixed(2)),
+      extra:    parseFloat((r.extra||0).toFixed(2)),
+      total:    Math.round(r.total||0)
+    };
+  });
+
+  var payload = encodeURIComponent(JSON.stringify({
+    periodo:      pa.nombre,
+    mes:          pa.mes||'',
+    bloque:       snapshot.num,
+    fechaImport:  snapshot.fechaImport,
+    desde:        snapshot.desde,
+    hasta:        snapshot.hasta,
+    empleados:    filas
+  }));
+
+  fetch(url+'?bloqueEnCurso='+payload)
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.status==='ok'){
+        _toastSync('Bloque '+snapshot.num+' registrado en la planilla', true);
+      } else {
+        _toastSync('Bloque guardado localmente — error Sheets: '+(d.mensaje||''), false);
+      }
+    })
+    .catch(function(){
+      // Fallo silencioso — el bloque ya está en localStorage
+    });
+}
+
+function _toastSync(msg, ok){
+  var t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:70px;right:24px;padding:10px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.18);display:flex;align-items:center;gap:8px;transition:opacity .4s;'
+    +(ok ? 'background:#e5f3e8;color:#1e5c28;border:1.5px solid #a8d5b5'
+         : 'background:#fff3e8;color:#a0522d;border:1.5px solid #f5c89a');
+  t.innerHTML = (ok
+    ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>'
+    : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>')
+    + ' Sheets: ' + msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 400); }, 4500);
 }
 
 function cargarPeriodoDesdeSheets(manual){
